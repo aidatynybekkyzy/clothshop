@@ -1,0 +1,11 @@
+package com.aidatynybekkyzy.clothshop.repository;
+
+import com.aidatynybekkyzy.clothshop.model.Order;
+import com.aidatynybekkyzy.clothshop.model.Product;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+
+}
