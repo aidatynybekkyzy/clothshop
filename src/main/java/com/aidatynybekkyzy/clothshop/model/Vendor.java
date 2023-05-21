@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table(name = "vendor")
+@Table(name = "vendors")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,7 +26,7 @@ public class Vendor {
     @Column(length = 100, nullable = false)
     private String vendorName;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "vendorId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY/*, mappedBy = "vendor"*/, cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<Product> products;
 

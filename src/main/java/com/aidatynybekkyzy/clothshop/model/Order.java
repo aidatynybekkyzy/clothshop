@@ -38,7 +38,7 @@ public class Order {
 
     @NotEmpty
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Product> items;
+    private List<Product> products;
 
     @ManyToOne
     @JoinColumn(name="user_id")
