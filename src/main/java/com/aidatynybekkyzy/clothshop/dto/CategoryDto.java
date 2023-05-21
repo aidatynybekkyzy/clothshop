@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,4 +23,6 @@ public class CategoryDto {
     @NotEmpty()
     @Size(min = 4, max = 50)
     private String categoryName;
+
+    private List<ProductDto> products;
 }

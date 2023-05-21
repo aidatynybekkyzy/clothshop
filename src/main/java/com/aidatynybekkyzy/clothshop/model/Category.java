@@ -12,13 +12,14 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Table(name = "categories")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(length = 50, nullable = false)
     private String categoryName;
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "categoryId")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY/*, mappedBy = "category"*/)
     @ToString.Exclude
     private List<Product> products;
 
