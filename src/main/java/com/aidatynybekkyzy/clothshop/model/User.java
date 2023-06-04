@@ -1,14 +1,12 @@
 package com.aidatynybekkyzy.clothshop.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -16,7 +14,6 @@ import java.util.Set;
 
 @Getter
 @Setter
-@ToString
 @Entity
 @NoArgsConstructor
 @Table(name = "users")
@@ -49,8 +46,6 @@ public class User {
     private String phone;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
-    @JsonManagedReference
     private Set<Order> orders = new HashSet<>();
-
 
 }

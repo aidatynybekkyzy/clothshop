@@ -2,7 +2,10 @@ package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.dto.CategoryDto;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
+import com.aidatynybekkyzy.clothshop.exception.CategoryAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.CategoryNotFoundException;
+import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
+import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;
 import com.aidatynybekkyzy.clothshop.service.CategoryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,15 +23,25 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDTO) {
-        CategoryDto createdCategory = categoryService.createCategory(categoryDTO);
-        return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
+    public ResponseEntity<?> createCategory(@RequestBody CategoryDto categoryDTO) {
+        try {
+            CategoryDto createdCategory = categoryService.createCategory(categoryDTO);
+            return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
+        } catch (CategoryAlreadyExistsException | InvalidArgumentException alreadyExistsException) {
+            return handleException(alreadyExistsException, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryDto> getCategory(@PathVariable Long id) {
-        CategoryDto categoryDTO = categoryService.getCategoryById(id);
-        return new ResponseEntity<>(categoryDTO, HttpStatus.OK);
+    public ResponseEntity<?> getCategory(@PathVariable Long id) {
+        try {
+            CategoryDto categoryDTO = categoryService.getCategoryById(id);
+            return new ResponseEntity<>(categoryDTO, HttpStatus.OK);
+        } catch (CategoryNotFoundException e) {
+            return handleException(e, HttpStatus.NOT_FOUND);
+        } catch (InvalidArgumentException e) {
+            return handleException(e, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping
@@ -38,15 +51,26 @@ public class CategoryController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
-        CategoryDto updatedCategory = categoryService.updateCategory(id, categoryDto);
-        return new ResponseEntity<>(updatedCategory, HttpStatus.OK);
+    public ResponseEntity<?> updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
+        try {
+            CategoryDto updatedCategory = categoryService.updateCategory(id, categoryDto);
+            return new ResponseEntity<>(updatedCategory, HttpStatus.OK);
+        } catch (CategoryNotFoundException e) {
+            return handleException(e, HttpStatus.NOT_FOUND);
+        } catch (InvalidArgumentException e) {
+            return handleException(e, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
-        categoryService.deleteCategory(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
+        try {
+            categoryService.deleteCategory(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (CategoryNotFoundException e) {
+            return handleException(e, HttpStatus.NOT_FOUND);
+        }
+
     }
 
     @GetMapping("/{categoryId}/products")
@@ -56,8 +80,13 @@ public class CategoryController {
             return new ResponseEntity<>(products, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (CategoryNotFoundException   e) {
+        } catch (CategoryNotFoundException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+    private ResponseEntity<ApiResponse> handleException(Exception exception, HttpStatus status) {
+        ApiResponse errorResponse = new ApiResponse(status.value(), "Error", exception.getMessage());
+        return ResponseEntity.status(status).body(errorResponse);
+
     }
 }

@@ -1,7 +1,9 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
+import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.exception.ProductNotFoundException;
+import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;
 import com.aidatynybekkyzy.clothshop.service.ProductService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,12 +30,14 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDto> getProduct(@PathVariable Long id) {
+    public ResponseEntity<?> getProduct(@PathVariable Long id) {
         try {
-            ProductDto productDto = productService.getProductById(      id);
+            ProductDto productDto = productService.getProductById(id);
             return new ResponseEntity<>(productDto, HttpStatus.OK);
         } catch (ProductNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return handleException(e, HttpStatus.NOT_FOUND);
+        } catch (IllegalArgumentException e) {
+            return handleException(e, HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -44,12 +48,14 @@ public class ProductController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto productDto) {
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductDto productDto) {
         try {
             ProductDto updatedProduct = productService.updateProduct(id, productDto);
             return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
         } catch (ProductNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return handleException(e, HttpStatus.NOT_FOUND);
+        } catch (InvalidArgumentException e) {
+            return handleException(e, HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -66,30 +72,36 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
         try {
             productService.deleteProduct(id);
             return ResponseEntity.ok().body("Product deleted successfully");
         } catch (ProductNotFoundException e) {
-            return ResponseEntity.notFound().build();
+            return handleException(e, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during product deletion");
+            return handleException(e, HttpStatus.BAD_GATEWAY);
         }
     }
 
     @PostMapping("/{id}/photo")
-    public ResponseEntity<String> addPhoto(@PathVariable Long id, @RequestParam("photo") MultipartFile photo) {
+    public ResponseEntity<?> addPhoto(@PathVariable Long id, @RequestParam("photo") MultipartFile photo) {
         try {
             byte[] photoBytes = photo.getBytes();
             productService.addPhoto(id, photoBytes);
             return ResponseEntity.ok("Photo added successfully");
         } catch (ProductNotFoundException e) {
-            return ResponseEntity.notFound().build();
+            return handleException(e, HttpStatus.NOT_FOUND);
         } catch (IOException e) {
-            return ResponseEntity.badRequest().body("Failed to read photo file");
+            return handleException(e, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while adding photo");
         }
+    }
+
+    private ResponseEntity<ApiResponse> handleException(Exception exception, HttpStatus status) {
+        ApiResponse errorResponse = new ApiResponse(status.value(), "Error", exception.getMessage());
+        return ResponseEntity.status(status).body(errorResponse);
+
     }
 
 }
