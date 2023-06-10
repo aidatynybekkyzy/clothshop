@@ -31,7 +31,7 @@ public class CategoryServiceImpl implements CategoryService {
         this.productMapper = productMapper;
     }
 
-    @Override
+    @Override //todo categoryId returns null instead of actualID
     public CategoryDto createCategory(CategoryDto categoryDto) {
         try {
             Category category = categoryMapper.toEntity(categoryDto);

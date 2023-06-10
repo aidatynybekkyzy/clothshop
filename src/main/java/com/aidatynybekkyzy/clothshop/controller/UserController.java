@@ -6,6 +6,8 @@ import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.exception.UserNotFoundException;
 import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;
 import com.aidatynybekkyzy.clothshop.service.UserService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/users")
+@Api("Operations with users ")
 public class UserController {
     private final UserService userService;
 
@@ -22,6 +25,7 @@ public class UserController {
     }
 
     @PostMapping
+    @ApiOperation("Create new user ")
     public ResponseEntity<?> createUser(@RequestBody UserDto userDto) {
         try {
             UserDto createdUser = userService.createUser(userDto);
@@ -32,6 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation("Get user by id ")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
             UserDto user = userService.getUserById(id);
@@ -43,12 +48,14 @@ public class UserController {
     }
 
     @GetMapping
+    @ApiOperation("Get all users")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<UserDto> users = userService.getAllUsers();
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
+    @ApiOperation("Update user")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
 
         try {
@@ -63,6 +70,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @ApiOperation("Delete user")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
             userService.deleteUser(id);
@@ -76,6 +84,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/orders")
+    @ApiOperation("Get user's orders ")
     public ResponseEntity<?> getUserOrders(@PathVariable Long userId) {
         try {
             List<OrderDto> orders = userService.getUserOrders(userId);
@@ -87,6 +96,7 @@ public class UserController {
         }
     }
     @PostMapping("/{userId}/orders")
+    @ApiOperation("Create an order for a customer ")
     public ResponseEntity<?> createOrderForUser(@PathVariable Long userId, @RequestBody OrderDto orderDto){
         try {
             OrderDto orderDto1 = userService.createOrderForCustomer(userId, orderDto);

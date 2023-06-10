@@ -47,5 +47,4 @@ public class User {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
     private Set<Order> orders = new HashSet<>();
-
 }

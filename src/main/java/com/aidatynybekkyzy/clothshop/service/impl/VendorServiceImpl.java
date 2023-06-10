@@ -8,7 +8,6 @@ import com.aidatynybekkyzy.clothshop.mapper.ProductMapper;
 import com.aidatynybekkyzy.clothshop.mapper.VendorMapper;
 import com.aidatynybekkyzy.clothshop.model.Product;
 import com.aidatynybekkyzy.clothshop.model.Vendor;
-import com.aidatynybekkyzy.clothshop.repository.ProductRepository;
 import com.aidatynybekkyzy.clothshop.repository.VendorRepository;
 import com.aidatynybekkyzy.clothshop.service.VendorService;
 import org.springframework.stereotype.Service;
@@ -50,7 +49,7 @@ public class VendorServiceImpl implements VendorService {
     public VendorDto updateVendor(Long id, VendorDto vendorDto) {
         Vendor vendorExisting = vendorRepository.findById(id)
                 .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + vendorDto.getVendorId()));
-        vendorExisting.setVendorId(vendorDto.getVendorId());
+       // vendorExisting.setVendorId(vendorDto.getVendorId());
         vendorExisting.setVendorName(vendorDto.getVendorName());
 
         Vendor updatedVendor = vendorRepository.save(vendorExisting);
@@ -71,7 +70,7 @@ public class VendorServiceImpl implements VendorService {
         vendorRepository.delete(vendor);
     }
 
-    @Override
+    @Override //todo add exception ProductAlready exists
     public VendorDto addProductToVendor(long id, ProductDto productDto) {
         Vendor vendor = vendorRepository.findById(id)
                 .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + id));

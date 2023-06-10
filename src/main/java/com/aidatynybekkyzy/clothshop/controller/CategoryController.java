@@ -7,6 +7,7 @@ import com.aidatynybekkyzy.clothshop.exception.CategoryNotFoundException;
 import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;
 import com.aidatynybekkyzy.clothshop.service.CategoryService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@Slf4j
 @RequestMapping("/categories")
 public class CategoryController {
     private final CategoryService categoryService;
@@ -23,12 +25,13 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createCategory(@RequestBody CategoryDto categoryDTO) {
+    public ResponseEntity<?> createCategory(@RequestBody CategoryDto categoryDTO)  {
+        log.info("Creating new category");
         try {
             CategoryDto createdCategory = categoryService.createCategory(categoryDTO);
             return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
-        } catch (CategoryAlreadyExistsException | InvalidArgumentException alreadyExistsException) {
-            return handleException(alreadyExistsException, HttpStatus.BAD_REQUEST);
+        } catch (InvalidArgumentException exception) {
+            return handleException(exception, HttpStatus.NOT_ACCEPTABLE);
         }
     }
 

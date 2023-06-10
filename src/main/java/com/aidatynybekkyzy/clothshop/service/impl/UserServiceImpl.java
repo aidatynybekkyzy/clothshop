@@ -15,9 +15,11 @@ import com.aidatynybekkyzy.clothshop.repository.UserRepository;
 import com.aidatynybekkyzy.clothshop.service.UserService;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -48,7 +50,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto createUser(UserDto userDto) {
+    public UserDto createUser( @Valid UserDto userDto) {
         validateUniqueEmail(userDto.getEmail());
         User user = userMapper.toEntity(userDto);
         User savedUser = userRepository.save(user);
@@ -74,7 +76,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<OrderDto> getUserOrders(Long userId) {
-        return null;
+        User user = userMapper.toEntity(getUserById(userId));
+        List<Order> orders = orderRepository.findByUser(user);
+        return orders.stream().map(orderMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
