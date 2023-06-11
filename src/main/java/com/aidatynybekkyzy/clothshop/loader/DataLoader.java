@@ -2,15 +2,12 @@ package com.aidatynybekkyzy.clothshop.loader;
 
 import com.aidatynybekkyzy.clothshop.model.*;
 import com.aidatynybekkyzy.clothshop.repository.*;
-import com.aidatynybekkyzy.clothshop.service.CategoryService;
-import com.aidatynybekkyzy.clothshop.service.ProductService;
-import com.aidatynybekkyzy.clothshop.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 
 @Component
@@ -39,27 +36,26 @@ public class DataLoader implements CommandLineRunner {
     }
 
     private void loadData() {
+        Vendor vendor = new Vendor();
+        vendor.setId(1L);
+        vendor.setVendorName("Polo");
+        vendor.setProducts(new ArrayList<>());
+        vendorRepository.save(vendor);
+
+        Category category = new Category();
+        category.setId(1L);
+        category.setCategoryName("Men's clothing");
+        category.setProducts(new ArrayList<>());
+        categoryRepository.save(category);
+
         Product product = new Product();
         product.setId(1L);
         product.setName("T-Shirt");
         product.setPrice(new BigDecimal(1500));
         product.setQuantity(3);
-        product.setCategoryId(1L);
-        product.setVendorId(1L);
+        product.setCategoryId(category.getId());
+        product.setVendorId(vendor.getId());
         productRepository.save(product);
-
-        Vendor vendor = new Vendor();
-        vendor.setVendorId(1L);
-        vendor.setVendorName("Polo");
-        vendor.setProducts(List.of(product));
-        vendorRepository.save(vendor);
-
-        Category menClothing = new Category();
-        menClothing.setId(1L);
-        menClothing.setCategoryName("Men's clothing");
-        menClothing.setProducts(List.of(product));
-        categoryRepository.save(menClothing);
-
 
         User user = new User();
         user.setId(1L);

@@ -4,35 +4,54 @@ import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.exception.ProductAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.ProductNotFoundException;
+import com.aidatynybekkyzy.clothshop.exception.VendorNotFoundException;
+import com.aidatynybekkyzy.clothshop.mapper.CategoryMapper;
 import com.aidatynybekkyzy.clothshop.mapper.ProductMapper;
 import com.aidatynybekkyzy.clothshop.model.Product;
+import com.aidatynybekkyzy.clothshop.model.Vendor;
+import com.aidatynybekkyzy.clothshop.repository.CategoryRepository;
 import com.aidatynybekkyzy.clothshop.repository.ProductRepository;
+import com.aidatynybekkyzy.clothshop.repository.VendorRepository;
+import com.aidatynybekkyzy.clothshop.service.CategoryService;
 import com.aidatynybekkyzy.clothshop.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 public class ProductServiceImpl implements ProductService {
+    private final VendorRepository vendorRepository;
     private final ProductMapper productMapper;
     private final ProductRepository productRepository;
 
-    public ProductServiceImpl(ProductMapper productMapper, ProductRepository productRepository) {
+    public ProductServiceImpl(ProductMapper productMapper, ProductRepository productRepository,
+                              VendorRepository vendorRepository) {
         this.productMapper = productMapper;
         this.productRepository = productRepository;
+        this.vendorRepository = vendorRepository;
     }
 
     @Override
     public ProductDto createProduct(ProductDto productDto) throws ProductAlreadyExistsException {
-        Product product = productMapper.toEntity(productDto);
-        if (product.getName() == null || product.getName().isEmpty()){
+        if (productDto.getName() == null || productDto.getName().isEmpty()) {
             throw new InvalidArgumentException("Product name is required ");
         }
-        if (productRepository.existsByName(product.getName())){
-            throw new ProductAlreadyExistsException("Product with this name already exists " + product.getName());
+        if (productRepository.existsByName(productDto.getName())) {
+            throw new ProductAlreadyExistsException("Product with this name already exists " + productDto.getName());
         }
+        Vendor vendor = vendorRepository.findById(productDto.getVendorId())
+                .orElseThrow(() -> new VendorNotFoundException("Vendor not found with ID: " + productDto.getVendorId()));
+
+        Product product = Product.builder()
+                .name(productDto.getName())
+                .price(productDto.getPrice())
+                .quantity(productDto.getQuantity())
+                .categoryId(productDto.getCategoryId())
+                .vendorId(productDto.getVendorId())
+                .build();
         productRepository.save(product);
         return productMapper.toDto(product);
     }
@@ -56,7 +75,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductDto updateProduct(Long id, ProductDto productDTO) {
         Product existingProduct = productMapper.toEntity(getProductById(id));
 
-        if (productDTO.getName() == null || productDTO.getName().isEmpty()){
+        if (productDTO.getName() == null || productDTO.getName().isEmpty()) {
             throw new InvalidArgumentException(" Product name is required ");
         }
 

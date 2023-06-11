@@ -56,7 +56,6 @@ public class VendorController {
     public ResponseEntity<VendorDto> addProductToVendor(@PathVariable long id, @RequestBody ProductDto productDto) {
         VendorDto updatedVendor = vendorService.addProductToVendor(id, productDto);
         return ResponseEntity.ok(updatedVendor);
-
     }
 
     @GetMapping("/{id}/products")

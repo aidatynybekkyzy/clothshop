@@ -5,11 +5,9 @@ import com.aidatynybekkyzy.clothshop.dto.VendorDto;
 import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.exception.VendorAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.VendorNotFoundException;
-import com.aidatynybekkyzy.clothshop.mapper.ProductMapper;
 import com.aidatynybekkyzy.clothshop.mapper.VendorMapper;
 import com.aidatynybekkyzy.clothshop.model.Product;
 import com.aidatynybekkyzy.clothshop.model.Vendor;
-import com.aidatynybekkyzy.clothshop.repository.ProductRepository;
 import com.aidatynybekkyzy.clothshop.repository.VendorRepository;
 import com.aidatynybekkyzy.clothshop.service.VendorService;
 import org.springframework.stereotype.Service;
@@ -21,12 +19,10 @@ import java.util.stream.Collectors;
 public class VendorServiceImpl implements VendorService {
     private final VendorRepository vendorRepository;
     private final VendorMapper vendorMapper;
-    private final ProductMapper productMapper;
 
-    public VendorServiceImpl(VendorRepository vendorRepository, VendorMapper vendorMapper, ProductMapper productMapper) {
+    public VendorServiceImpl(VendorRepository vendorRepository, VendorMapper vendorMapper) {
         this.vendorRepository = vendorRepository;
         this.vendorMapper = vendorMapper;
-        this.productMapper = productMapper;
     }
 
     @Override
@@ -50,7 +46,7 @@ public class VendorServiceImpl implements VendorService {
     @Override
     public VendorDto updateVendor(Long id, VendorDto vendorDto) {
         Vendor vendorExisting = vendorRepository.findById(id)
-                .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + vendorDto.getVendorId()));
+                .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + vendorDto.getId()));
 
         if (vendorDto.getVendorName() == null || vendorDto.getVendorName().isEmpty()) {
             throw new InvalidArgumentException("Vendor name is required! ");
@@ -77,25 +73,31 @@ public class VendorServiceImpl implements VendorService {
 
     @Override //todo add exception ProductAlready exists
     public VendorDto addProductToVendor(long id, ProductDto productDto) {
-        Vendor vendor = vendorRepository.findById(id)
-                .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + id));
+        Vendor vendor = vendorMapper.toEntity(getVendorById(id));
+
         if (productDto.getName() == null || productDto.getName().isEmpty()) {
             throw new InvalidArgumentException("Product name is required! ");
         }
-        Product product = productMapper.toEntity(productDto);
-        vendor.getProducts().add(product);
 
-        Vendor updatedVendor = vendorRepository.save(vendor);
-        return vendorMapper.toDto(updatedVendor);
+        Product product = Product.builder()
+                .name(productDto.getName())
+                .price(productDto.getPrice())
+                .quantity(productDto.getQuantity())
+                .categoryId(productDto.getCategoryId())
+                .vendorId(productDto.getVendorId())
+                .build();
+
+        List<Product> products = vendor.getProducts();
+        products.add(product);
+        vendor.setProducts(products);
+
+        vendorRepository.save(vendor);
+        return vendorMapper.toDto(vendor);
     }
 
     @Override
     public List<ProductDto> getVendorProducts(long id) {
-        Vendor vendor = vendorRepository.findById(id)
-                .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + id));
-        List<ProductDto> products = vendor.getProducts().stream()
-                .map(productMapper::toDto)
-                .toList();
-        return products;
+        Vendor vendor = vendorMapper.toEntity(getVendorById(id));
+        return vendorMapper.toProductDtoList(vendor.getProducts());
     }
 }

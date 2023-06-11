@@ -25,24 +25,24 @@ public class Product {
     private String name;
     @Column(nullable = false)
     private BigDecimal price;
-    //@Lob //для хранения больших данных создается отдельный столбец Large Object
-
     private Integer quantity;
-    @Column(name="category_id", nullable = false)
+    @Column(name = "category_id")
     private Long categoryId;
 
-    @Column(name="vendor_id", nullable = false)
+    //@ManyToOne(fetch = FetchType.LAZY)
+    //@JoinColumn(name = "vendor_id", nullable = false)
+    @Column(name = "vendor_id")
     private Long vendorId;
     @Column(name = "product_photo")
     private byte[] photo;
 
-    public Product(Long id, String name, BigDecimal price, Integer quantity, Long categoryId, Long vendorId) {
+    public Product(Long id, String name, BigDecimal price, Integer quantity, Long category, Long vendor) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.quantity = quantity;
-        this.categoryId = categoryId;
-        this.vendorId = vendorId;
+        this.categoryId = category;
+        this.vendorId = vendor;
     }
 
     @Override

@@ -19,15 +19,14 @@ public class Category {
     private Long id;
     @Column(length = 50, nullable = false)
     private String categoryName;
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY/*, mappedBy = "category"*/)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "categoryId")
     @ToString.Exclude
     private List<Product> products;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Category)) return false;
-        Category category = (Category) o;
+        if (!(o instanceof Category category)) return false;
         return Objects.equals(id, category.id) && Objects.equals(category, category.categoryName) && Objects.equals(products, category.products);
     }
 

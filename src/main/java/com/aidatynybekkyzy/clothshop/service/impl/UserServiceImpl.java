@@ -5,15 +5,18 @@ import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
 import com.aidatynybekkyzy.clothshop.exception.UserEmailAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.UserNotFoundException;
+import com.aidatynybekkyzy.clothshop.mapper.CategoryMapper;
 import com.aidatynybekkyzy.clothshop.mapper.OrderMapper;
 import com.aidatynybekkyzy.clothshop.mapper.UserMapper;
 import com.aidatynybekkyzy.clothshop.model.Order;
 import com.aidatynybekkyzy.clothshop.model.OrderStatus;
 import com.aidatynybekkyzy.clothshop.model.Product;
 import com.aidatynybekkyzy.clothshop.model.User;
+import com.aidatynybekkyzy.clothshop.repository.CategoryRepository;
 import com.aidatynybekkyzy.clothshop.repository.OrderRepository;
 import com.aidatynybekkyzy.clothshop.repository.ProductRepository;
 import com.aidatynybekkyzy.clothshop.repository.UserRepository;
+import com.aidatynybekkyzy.clothshop.service.CategoryService;
 import com.aidatynybekkyzy.clothshop.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,14 +32,12 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, ProductRepository productRepository, OrderRepository orderRepository, OrderMapper orderMapper) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, OrderRepository orderRepository, OrderMapper orderMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
-        this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
     }
@@ -108,9 +109,7 @@ public class UserServiceImpl implements UserService {
                     .price(orderItemDto.getPrice())
                     .quantity(orderItemDto.getQuantity())
                     .categoryId(orderItemDto.getCategoryId())
-                    .vendorId(orderItemDto.getVendorId())
                     .build();
-
             order.getItems().add(orderItem);
         }
         user.getOrders().add(order); // Добавляем созданный заказ к списку заказов пользователя

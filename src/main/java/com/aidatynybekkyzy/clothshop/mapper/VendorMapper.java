@@ -1,18 +1,21 @@
 package com.aidatynybekkyzy.clothshop.mapper;
 
+import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.VendorDto;
+import com.aidatynybekkyzy.clothshop.model.Product;
 import com.aidatynybekkyzy.clothshop.model.Vendor;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface VendorMapper {
-    VendorMapper INSTANCE = Mappers.getMapper(VendorMapper.class);
-
     @Mapping(source = "vendorName", target = "vendorName")
     VendorDto toDto(Vendor vendor);
 
     @Mapping(source = "vendorName", target = "vendorName")
     Vendor toEntity(VendorDto vendorDto);
+
+    List<ProductDto> toProductDtoList(List<Product> orderItems);
 }

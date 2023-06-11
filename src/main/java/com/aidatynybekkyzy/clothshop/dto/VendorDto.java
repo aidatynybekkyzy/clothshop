@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VendorDto {
-    private Long vendorId;
+    private Long id;
     private String vendorName;
     private List<ProductDto> products;
 }
