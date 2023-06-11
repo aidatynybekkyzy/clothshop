@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CategoryDto {
     @Null
-    private Long categoryId;
+    private Long id;
 
     @NotEmpty()
     @Size(min = 4, max = 50)

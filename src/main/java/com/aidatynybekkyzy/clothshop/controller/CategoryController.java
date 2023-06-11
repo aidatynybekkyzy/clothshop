@@ -3,8 +3,6 @@ package com.aidatynybekkyzy.clothshop.controller;
 import com.aidatynybekkyzy.clothshop.dto.CategoryDto;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.exception.CategoryAlreadyExistsException;
-import com.aidatynybekkyzy.clothshop.exception.CategoryNotFoundException;
-import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;
 import com.aidatynybekkyzy.clothshop.service.CategoryService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,26 +23,17 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createCategory(@RequestBody CategoryDto categoryDTO)  {
-        log.info("Creating new category");
-        try {
-            CategoryDto createdCategory = categoryService.createCategory(categoryDTO);
-            return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
-        } catch (InvalidArgumentException exception) {
-            return handleException(exception, HttpStatus.NOT_ACCEPTABLE);
-        }
+    public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDTO) throws CategoryAlreadyExistsException {
+        log.info("CONTROLLER Creating new category");
+        CategoryDto createdCategory = categoryService.createCategory(categoryDTO);
+        return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
+
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getCategory(@PathVariable Long id) {
-        try {
-            CategoryDto categoryDTO = categoryService.getCategoryById(id);
-            return new ResponseEntity<>(categoryDTO, HttpStatus.OK);
-        } catch (CategoryNotFoundException e) {
-            return handleException(e, HttpStatus.NOT_FOUND);
-        } catch (InvalidArgumentException e) {
-            return handleException(e, HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<CategoryDto> getCategory(@PathVariable Long id) {
+        CategoryDto categoryDTO = categoryService.getCategoryById(id);
+        return new ResponseEntity<>(categoryDTO, HttpStatus.OK);
     }
 
     @GetMapping
@@ -54,42 +43,20 @@ public class CategoryController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
-        try {
-            CategoryDto updatedCategory = categoryService.updateCategory(id, categoryDto);
-            return new ResponseEntity<>(updatedCategory, HttpStatus.OK);
-        } catch (CategoryNotFoundException e) {
-            return handleException(e, HttpStatus.NOT_FOUND);
-        } catch (InvalidArgumentException e) {
-            return handleException(e, HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
+        CategoryDto updatedCategory = categoryService.updateCategory(id, categoryDto);
+        return new ResponseEntity<>(updatedCategory, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
-        try {
-            categoryService.deleteCategory(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (CategoryNotFoundException e) {
-            return handleException(e, HttpStatus.NOT_FOUND);
-        }
-
+    public ResponseEntity<ApiResponse> deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/{categoryId}/products")
     public ResponseEntity<List<ProductDto>> getAllProductsByCategoryId(@PathVariable Long categoryId) {
-        try {
             List<ProductDto> products = categoryService.getAllProductsByCategoryId(categoryId);
             return new ResponseEntity<>(products, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (CategoryNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-    private ResponseEntity<ApiResponse> handleException(Exception exception, HttpStatus status) {
-        ApiResponse errorResponse = new ApiResponse(status.value(), "Error", exception.getMessage());
-        return ResponseEntity.status(status).body(errorResponse);
-
     }
 }

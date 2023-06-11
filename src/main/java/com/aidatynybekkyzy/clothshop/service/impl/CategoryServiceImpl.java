@@ -4,6 +4,7 @@ import com.aidatynybekkyzy.clothshop.dto.CategoryDto;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.exception.CategoryAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.CategoryNotFoundException;
+import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.mapper.CategoryMapper;
 import com.aidatynybekkyzy.clothshop.mapper.ProductMapper;
 import com.aidatynybekkyzy.clothshop.model.Category;
@@ -11,9 +12,7 @@ import com.aidatynybekkyzy.clothshop.model.Product;
 import com.aidatynybekkyzy.clothshop.repository.CategoryRepository;
 import com.aidatynybekkyzy.clothshop.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,26 +31,21 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override //todo categoryId returns null instead of actualID
-    public CategoryDto createCategory(CategoryDto categoryDto) {
-        try {
+    public CategoryDto createCategory(CategoryDto categoryDto) throws CategoryAlreadyExistsException {
             Category category = categoryMapper.toEntity(categoryDto);
             if (category.getCategoryName() == null || category.getCategoryName().isEmpty()) {
-                throw new IllegalArgumentException("Category name is required");
+                throw new InvalidArgumentException("Category name is required");
             }
             if (categoryRepository.existsByCategoryName(category.getCategoryName())) {
                 throw new CategoryAlreadyExistsException("Category already exists with name: " + category.getCategoryName());
             }
             Category savedCategory = categoryRepository.save(category);
             return categoryMapper.toDto(savedCategory);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
     }
 
     @Override
     public List<ProductDto> getAllProductsByCategoryId(Long categoryId) {
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
+        Category category = categoryMapper.toEntity(getCategoryById(categoryId));
 
         List<Product> products = category.getProducts();
         return products.stream()
@@ -76,17 +70,16 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto updateCategory(Long id, CategoryDto categoryDto) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + id));
+        Category category = categoryMapper.toEntity(getCategoryById(id));
 
         if (categoryDto.getCategoryName() == null || categoryDto.getCategoryName().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category name is required");
+            throw new InvalidArgumentException("Category name is required");
         }
 
         category.setCategoryName(categoryDto.getCategoryName());
-        category.setProducts(categoryDto.getProducts().stream()
+        /*category.setProducts(categoryDto.getProducts().stream()
                 .map(productMapper::toEntity)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList()));*/
 
         Category updatedCategory = categoryRepository.save(category);
         return categoryMapper.toDto(updatedCategory);

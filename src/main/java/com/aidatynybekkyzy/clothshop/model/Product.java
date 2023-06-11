@@ -1,7 +1,6 @@
 package com.aidatynybekkyzy.clothshop.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.*;
@@ -13,6 +12,9 @@ import java.util.Objects;
 @Setter
 @Table(name = "products")
 @Slf4j
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Product {
 
     @Id
@@ -24,8 +26,6 @@ public class Product {
     @Column(nullable = false)
     private BigDecimal price;
     //@Lob //для хранения больших данных создается отдельный столбец Large Object
-    @Column(name = "product_photo")
-    private byte[] photo;
 
     private Integer quantity;
     @Column(name="category_id", nullable = false)
@@ -33,14 +33,16 @@ public class Product {
 
     @Column(name="vendor_id", nullable = false)
     private Long vendorId;
+    @Column(name = "product_photo")
+    private byte[] photo;
 
-    public Product(Long id, String name, BigDecimal price) {
+    public Product(Long id, String name, BigDecimal price, Integer quantity, Long categoryId, Long vendorId) {
         this.id = id;
         this.name = name;
         this.price = price;
-    }
-
-    public Product() {
+        this.quantity = quantity;
+        this.categoryId = categoryId;
+        this.vendorId = vendorId;
     }
 
     @Override

@@ -2,12 +2,14 @@ package com.aidatynybekkyzy.clothshop.service.impl;
 
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.VendorDto;
+import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.exception.VendorAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.VendorNotFoundException;
 import com.aidatynybekkyzy.clothshop.mapper.ProductMapper;
 import com.aidatynybekkyzy.clothshop.mapper.VendorMapper;
 import com.aidatynybekkyzy.clothshop.model.Product;
 import com.aidatynybekkyzy.clothshop.model.Vendor;
+import com.aidatynybekkyzy.clothshop.repository.ProductRepository;
 import com.aidatynybekkyzy.clothshop.repository.VendorRepository;
 import com.aidatynybekkyzy.clothshop.service.VendorService;
 import org.springframework.stereotype.Service;
@@ -49,7 +51,10 @@ public class VendorServiceImpl implements VendorService {
     public VendorDto updateVendor(Long id, VendorDto vendorDto) {
         Vendor vendorExisting = vendorRepository.findById(id)
                 .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + vendorDto.getVendorId()));
-       // vendorExisting.setVendorId(vendorDto.getVendorId());
+
+        if (vendorDto.getVendorName() == null || vendorDto.getVendorName().isEmpty()) {
+            throw new InvalidArgumentException("Vendor name is required! ");
+        }
         vendorExisting.setVendorName(vendorDto.getVendorName());
 
         Vendor updatedVendor = vendorRepository.save(vendorExisting);
@@ -74,6 +79,9 @@ public class VendorServiceImpl implements VendorService {
     public VendorDto addProductToVendor(long id, ProductDto productDto) {
         Vendor vendor = vendorRepository.findById(id)
                 .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + id));
+        if (productDto.getName() == null || productDto.getName().isEmpty()) {
+            throw new InvalidArgumentException("Product name is required! ");
+        }
         Product product = productMapper.toEntity(productDto);
         vendor.getProducts().add(product);
 

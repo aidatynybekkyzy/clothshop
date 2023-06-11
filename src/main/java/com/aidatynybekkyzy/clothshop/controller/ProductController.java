@@ -1,10 +1,9 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
-import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
-import com.aidatynybekkyzy.clothshop.exception.ProductNotFoundException;
-import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;
+import com.aidatynybekkyzy.clothshop.exception.ProductAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/products")
+@Slf4j
 public class ProductController {
     private final ProductService productService;
 
@@ -24,21 +24,16 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) {
+    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) throws ProductAlreadyExistsException {
         ProductDto createdProduct = productService.createProduct(productDto);
         return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getProduct(@PathVariable Long id) {
-        try {
-            ProductDto productDto = productService.getProductById(id);
-            return new ResponseEntity<>(productDto, HttpStatus.OK);
-        } catch (ProductNotFoundException e) {
-            return handleException(e, HttpStatus.NOT_FOUND);
-        } catch (IllegalArgumentException e) {
-            return handleException(e, HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<ProductDto> getProduct(@PathVariable Long id) {
+        log.info("CONTROLLER  Get product by id");
+        ProductDto productDto = productService.getProductById(id);
+        return new ResponseEntity<>(productDto, HttpStatus.OK);
     }
 
     @GetMapping
@@ -48,60 +43,27 @@ public class ProductController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductDto productDto) {
-        try {
-            ProductDto updatedProduct = productService.updateProduct(id, productDto);
-            return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
-        } catch (ProductNotFoundException e) {
-            return handleException(e, HttpStatus.NOT_FOUND);
-        } catch (InvalidArgumentException e) {
-            return handleException(e, HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto productDto) {
+        ProductDto updatedProduct = productService.updateProduct(id, productDto);
+        return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 
     @GetMapping("/{productId}/photo")
     public ResponseEntity<byte[]> getProductPhoto(@PathVariable Long productId) {
-        try {
-            byte[] photo = productService.getProductPhoto(productId);
-            return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(photo);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        } catch (ProductNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        byte[] photo = productService.getProductPhoto(productId);
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(photo);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
-        try {
-            productService.deleteProduct(id);
-            return ResponseEntity.ok().body("Product deleted successfully");
-        } catch (ProductNotFoundException e) {
-            return handleException(e, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return handleException(e, HttpStatus.BAD_GATEWAY);
-        }
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/{id}/photo")
-    public ResponseEntity<?> addPhoto(@PathVariable Long id, @RequestParam("photo") MultipartFile photo) {
-        try {
-            byte[] photoBytes = photo.getBytes();
-            productService.addPhoto(id, photoBytes);
-            return ResponseEntity.ok("Photo added successfully");
-        } catch (ProductNotFoundException e) {
-            return handleException(e, HttpStatus.NOT_FOUND);
-        } catch (IOException e) {
-            return handleException(e, HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while adding photo");
-        }
+    public ResponseEntity<?> addPhoto(@PathVariable Long id, @RequestParam("photo") MultipartFile photo) throws IOException {
+        byte[] photoBytes = photo.getBytes();
+        productService.addPhoto(id, photoBytes);
+        return ResponseEntity.ok("Photo added successfully");
     }
-
-    private ResponseEntity<ApiResponse> handleException(Exception exception, HttpStatus status) {
-        ApiResponse errorResponse = new ApiResponse(status.value(), "Error", exception.getMessage());
-        return ResponseEntity.status(status).body(errorResponse);
-
-    }
-
 }

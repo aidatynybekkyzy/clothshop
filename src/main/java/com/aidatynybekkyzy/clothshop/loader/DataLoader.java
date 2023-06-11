@@ -15,24 +15,17 @@ import java.util.Set;
 
 @Component
 public class DataLoader implements CommandLineRunner {
-    private final UserService userService;
-    private final CategoryService categoryService;
-    private final ProductService productService;
     private final ProductRepository productRepository;
     private final VendorRepository vendorRepository;
     private final CategoryRepository categoryRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
 
-    public DataLoader(UserService userService, CategoryService categoryService, ProductService productService,
-                      ProductRepository productRepository,
+    public DataLoader(ProductRepository productRepository,
                       VendorRepository vendorRepository,
                       CategoryRepository categoryRepository,
                       OrderRepository orderRepository,
                       UserRepository userRepository) {
-        this.userService = userService;
-        this.categoryService = categoryService;
-        this.productService = productService;
         this.productRepository = productRepository;
         this.vendorRepository = vendorRepository;
         this.categoryRepository = categoryRepository;
@@ -41,7 +34,7 @@ public class DataLoader implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args){
         loadData();
     }
 
@@ -67,11 +60,6 @@ public class DataLoader implements CommandLineRunner {
         menClothing.setProducts(List.of(product));
         categoryRepository.save(menClothing);
 
-        OrderItem orderItem = new OrderItem();
-        orderItem.setId(1L);
-        orderItem.setProduct(product);
-        orderItem.setQuantity(3);
-        orderItem.setPrice(new BigDecimal(1000));
 
         User user = new User();
         user.setId(1L);
@@ -89,10 +77,9 @@ public class DataLoader implements CommandLineRunner {
         order.setCreatedAt(LocalDateTime.now());
         order.setStatus(OrderStatus.PLACED.name());
         order.setComplete(true);
-        order.setOrderItems(List.of(orderItem));
+        order.setItems(Set.of(product));
         order.setUser(user);
         orderRepository.save(order);
-
 
         user.setOrders(Set.of(order));
         userRepository.save(user);

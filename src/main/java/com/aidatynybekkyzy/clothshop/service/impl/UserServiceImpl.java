@@ -1,27 +1,31 @@
 package com.aidatynybekkyzy.clothshop.service.impl;
 
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
-import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
+import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
-import com.aidatynybekkyzy.clothshop.exception.ProductNotFoundException;
 import com.aidatynybekkyzy.clothshop.exception.UserEmailAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.UserNotFoundException;
 import com.aidatynybekkyzy.clothshop.mapper.OrderMapper;
 import com.aidatynybekkyzy.clothshop.mapper.UserMapper;
-import com.aidatynybekkyzy.clothshop.model.*;
+import com.aidatynybekkyzy.clothshop.model.Order;
+import com.aidatynybekkyzy.clothshop.model.OrderStatus;
+import com.aidatynybekkyzy.clothshop.model.Product;
+import com.aidatynybekkyzy.clothshop.model.User;
 import com.aidatynybekkyzy.clothshop.repository.OrderRepository;
 import com.aidatynybekkyzy.clothshop.repository.ProductRepository;
 import com.aidatynybekkyzy.clothshop.repository.UserRepository;
 import com.aidatynybekkyzy.clothshop.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -45,12 +49,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserById(Long id) {
+        log.info("SERVICE  Get user by id");
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
         return userMapper.toDto(user);
     }
 
     @Override
-    public UserDto createUser( @Valid UserDto userDto) {
+    public UserDto createUser( @Valid UserDto userDto) throws UserEmailAlreadyExistsException {
         validateUniqueEmail(userDto.getEmail());
         User user = userMapper.toEntity(userDto);
         User savedUser = userRepository.save(user);
@@ -58,8 +63,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateUser(Long id, UserDto userDto) {
-        User existingUser = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+    public UserDto updateUser(Long id, UserDto userDto) throws UserEmailAlreadyExistsException {
+        User existingUser = userMapper.toEntity(getUserById(id));
 
         validateUniqueEmail(userDto.getEmail(), id);
 
@@ -70,7 +75,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+        User user = userMapper.toEntity(getUserById(id));
         userRepository.delete(user);
     }
 
@@ -84,43 +89,43 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public OrderDto createOrderForCustomer(Long userId, OrderDto orderDto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id " + userId));
-        //
+        User user = userMapper.toEntity(getUserById(userId));
+
         Order order = Order.builder()
                 .shipDate(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .status(OrderStatus.PLACED.name())
                 .complete(false)
-                .orderItems(new ArrayList<>())
-                .user(user).build();
+                .items(new HashSet<>())
+                .user(user)
+                .build();
 
-        List<OrderItemDto> orderItemDtos = orderDto.getItems();
-        for (OrderItemDto orderItemDto : orderItemDtos) {
-            Product product = productRepository.findById(orderItemDto.getId())
-                    .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + orderItemDto.getId()));
+        List<ProductDto> orderItems = orderDto.getItems();
 
-            OrderItem orderItem = OrderItem.builder()
-                    .quantity(orderItemDto.getQuantity())
+        for (ProductDto orderItemDto : orderItems) {
+            Product orderItem = Product.builder()
+                    .name(orderItemDto.getName())
                     .price(orderItemDto.getPrice())
-                    .product(product)
-                    .order(order)
+                    .quantity(orderItemDto.getQuantity())
+                    .categoryId(orderItemDto.getCategoryId())
+                    .vendorId(orderItemDto.getVendorId())
                     .build();
 
-            order.getOrderItems().add(orderItem);
+            order.getItems().add(orderItem);
         }
+        user.getOrders().add(order); // Добавляем созданный заказ к списку заказов пользователя
 
         Order savedOrder = orderRepository.save(order);
         return orderMapper.toDto(savedOrder);
     }
 
-    private void validateUniqueEmail(String email) {
+    private void validateUniqueEmail(String email) throws UserEmailAlreadyExistsException {
         if (userRepository.existsByEmail(email)) {
             throw new UserEmailAlreadyExistsException("User with this email already exists: " + email);
         }
     }
 
-    private void validateUniqueEmail(String email, Long userId) {
+    private void validateUniqueEmail(String email, Long userId) throws UserEmailAlreadyExistsException {
         if (userRepository.existsByEmailAndIdNot(email, userId)) {
             throw new UserEmailAlreadyExistsException("User with this email already exists: " + email);
         }

@@ -1,13 +1,14 @@
 package com.aidatynybekkyzy.clothshop.mapper;
 
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
-import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
+import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.model.Order;
-import com.aidatynybekkyzy.clothshop.model.OrderItem;
+import com.aidatynybekkyzy.clothshop.model.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
@@ -19,8 +20,8 @@ public interface OrderMapper {
 
     List<OrderDto> toDtoList(List<Order> order);
 
-    OrderItem toOrderItemEntity(OrderItemDto orderItemDto);
+    Product toProductEntity(ProductDto productDto);
 
-    OrderItemDto toOrderItemDto(OrderItem orderItem);
-    List<OrderItemDto> toOrderItemDtoList(List<OrderItem> orderItems);
+    ProductDto toItemDto(Product product);
+    Set<ProductDto> toItemDtoSet(Set<Product> orderItems);
 }

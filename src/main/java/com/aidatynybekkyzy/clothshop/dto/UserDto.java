@@ -1,6 +1,5 @@
 package com.aidatynybekkyzy.clothshop.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,13 +30,11 @@ public class UserDto {
     @Email
     @NotEmpty
     private String email;
-    @JsonIgnore
-    @NotNull
     @Size(min = 7, max = 60, message = "{validation.user.passwordSize}")
     private String password;
     @NotNull
     @Size(max = 20)
     private String phone;
-   private Set<OrderDto> orders = new HashSet<>();
+    private Set<OrderDto> orders = new HashSet<>();
 
 }

@@ -23,11 +23,6 @@ public class Category {
     @ToString.Exclude
     private List<Product> products;
 
-    public Category(String name, List<Product> products) {
-        this.categoryName = name;
-        this.products = products;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -1,16 +1,15 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
-import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
-import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
-import com.aidatynybekkyzy.clothshop.exception.ItemNotFoundException;
-import com.aidatynybekkyzy.clothshop.exception.OrderNotFoundException;
+import com.aidatynybekkyzy.clothshop.dto.ProductDto;
+import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;
 import com.aidatynybekkyzy.clothshop.service.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/orders")
@@ -28,101 +27,50 @@ public class OrderController {
 
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderDto> getOrderById(@PathVariable Long orderId) {
-        try {
-            OrderDto order = orderService.getOrderById(orderId);
-            return new ResponseEntity<>(order, HttpStatus.OK);
-        } catch (InvalidArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (OrderNotFoundException exception) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        OrderDto order = orderService.getOrderById(orderId);
+        return new ResponseEntity<>(order, HttpStatus.OK);
+
     }
 
     @PostMapping("/{orderId}/items")
-    public ResponseEntity<OrderDto> addItemToOrder(@PathVariable Long orderId, @RequestBody OrderItemDto orderItemDto){
-        try {
-            OrderDto orderDto = orderService.addOrderItem(orderId,orderItemDto);
-            return new ResponseEntity<>(orderDto,HttpStatus.OK);
-        } catch (OrderNotFoundException e){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (InvalidArgumentException e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<OrderDto> addItemToOrder(@PathVariable Long orderId, @RequestBody ProductDto productDto) {
+        OrderDto orderDto = orderService.addItem(orderId, productDto);
+        return new ResponseEntity<>(orderDto, HttpStatus.OK);
     }
 
     @PostMapping("/{id}/cancel")
-    public ResponseEntity<Void> cancelOrder(@PathVariable Long id){
-        try {
-            orderService.cancelOrderById(id);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (OrderNotFoundException e){
-            return handleOrderNotFound();
-        } catch (InvalidArgumentException e){
-            return handleInvalidArgument();
-        }
+    public ResponseEntity<ApiResponse> cancelOrder(@PathVariable Long id) {
+        orderService.cancelOrderById(id);
+        return  ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(HttpStatus.OK.value()," Order cancel success "));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrderById(@PathVariable Long id){
-        try {
-            orderService.deleteOrderById(id);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (OrderNotFoundException e){
-            return handleOrderNotFound();
-        } catch (InvalidArgumentException e){
-            return handleInvalidArgument();
-        }
+    public ResponseEntity<ApiResponse> deleteOrderById(@PathVariable Long id) {
+        orderService.deleteOrderById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(HttpStatus.OK.value(), " Deleted successfully"));
     }
 
     @GetMapping("/{orderId}/items/{itemId}")
-    public ResponseEntity<OrderItemDto> getOrderItem(@PathVariable Long orderId,@PathVariable Long itemId){
-        try {
-            OrderItemDto orderItemDto = orderService.getItemOrder(orderId, itemId);
-            return new ResponseEntity<>(orderItemDto, HttpStatus.OK);
-        } catch (OrderNotFoundException | ItemNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<ProductDto> getOrderItem(@PathVariable Long orderId, @PathVariable Long itemId) {
+        ProductDto orderItemDto = orderService.getItemOrder(orderId, itemId);
+        return new ResponseEntity<>(orderItemDto, HttpStatus.OK);
     }
 
     @GetMapping("/{orderId}/items")
-    public ResponseEntity<List<OrderItemDto>> getOrderItems(@PathVariable Long orderId){
-        try {
-            List<OrderItemDto> orderItemDtos = orderService.getAllOrderItems(orderId);
-            return new ResponseEntity<>(orderItemDtos, HttpStatus.OK);
-        } catch (OrderNotFoundException e){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (InvalidArgumentException e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<Set<ProductDto>> getOrderItems(@PathVariable Long orderId) {
+        Set<ProductDto> orderItemDtos = orderService.getAllOrderItems(orderId);
+        return new ResponseEntity<>(orderItemDtos, HttpStatus.OK);
     }
 
     @DeleteMapping("/{orderId}/items/{itemId}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long orderId, @PathVariable Long itemId){
-        try {
-            orderService.deleteItemOrder(orderId, itemId);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (OrderNotFoundException | ItemNotFoundException e){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<ApiResponse> deleteOrderItem(@PathVariable Long orderId, @PathVariable Long itemId) {
+        orderService.deleteItemOrder(orderId, itemId);
+        return  ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(HttpStatus.NO_CONTENT.value(), " Order Item deleted successfully"));
     }
 
     @PostMapping("/{id}/purchase")
-    public ResponseEntity<Void> purchaseOrder(@PathVariable Long id){
-        try {
-            orderService.purchaseOrder(id);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (OrderNotFoundException e){
-            return handleOrderNotFound();
-        } catch (InvalidArgumentException e){
-            return handleInvalidArgument();
-        }
-    }
-
-    private ResponseEntity<Void> handleOrderNotFound() {
-        return ResponseEntity.notFound().build();
-    }
-
-    private ResponseEntity<Void> handleInvalidArgument() {
-        return ResponseEntity.badRequest().build();
+    public ResponseEntity<ApiResponse> purchaseOrder(@PathVariable Long id) {
+        orderService.purchaseOrder(id);
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(HttpStatus.OK.value()," Order paid successfully"));
     }
 }

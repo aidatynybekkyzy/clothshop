@@ -1,6 +1,8 @@
 package com.aidatynybekkyzy.clothshop.service.impl;
 
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
+import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
+import com.aidatynybekkyzy.clothshop.exception.ProductAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.ProductNotFoundException;
 import com.aidatynybekkyzy.clothshop.mapper.ProductMapper;
 import com.aidatynybekkyzy.clothshop.model.Product;
@@ -23,10 +25,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDto createProduct(ProductDto productDto) {
+    public ProductDto createProduct(ProductDto productDto) throws ProductAlreadyExistsException {
         Product product = productMapper.toEntity(productDto);
+        if (product.getName() == null || product.getName().isEmpty()){
+            throw new InvalidArgumentException("Product name is required ");
+        }
+        if (productRepository.existsByName(product.getName())){
+            throw new ProductAlreadyExistsException("Product with this name already exists " + product.getName());
+        }
         productRepository.save(product);
-
         return productMapper.toDto(product);
     }
 
@@ -47,8 +54,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDto updateProduct(Long id, ProductDto productDTO) {
-        Product existingProduct = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
+        Product existingProduct = productMapper.toEntity(getProductById(id));
+
+        if (productDTO.getName() == null || productDTO.getName().isEmpty()){
+            throw new InvalidArgumentException(" Product name is required ");
+        }
 
         Product updatedProduct = productMapper.toEntity(productDTO);
         updatedProduct.setId(existingProduct.getId());
@@ -68,8 +78,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public byte[] getProductPhoto(Long productId) {
         log.info("Getting photo from product SERVICE");
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+        Product product = productMapper.toEntity(getProductById(productId));
         return product.getPhoto();
     }
 

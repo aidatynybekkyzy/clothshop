@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-    @Transactional
     @Query("select (count(c) > 0) from Category c where c.categoryName = ?1")
-    boolean existsByCategoryName(String name);
+    @Transactional
+    boolean existsByCategoryName( String name);
 }

@@ -7,7 +7,8 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "orders")
@@ -31,12 +32,22 @@ public class Order {
     @Builder.Default
     private Boolean complete = false;
     @NotEmpty
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "order")
-    private List<OrderItem> orderItems;
-    @ManyToOne
-    @JoinColumn(name="user_id", nullable = false)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<Product> items = new HashSet<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_order",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "order_id"))
     private User user;
 
+    public void  add (Product orderItem){
+        if (orderItem != null){
+            if (items == null){
+                items = new HashSet<>();
+            }
+            items.add(orderItem);
+        }
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

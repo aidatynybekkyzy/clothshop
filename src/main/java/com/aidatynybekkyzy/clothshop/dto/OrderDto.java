@@ -17,7 +17,7 @@ public class OrderDto {
     private LocalDateTime createdAt;
     private String status;
     private Boolean complete;
-    private List<OrderItemDto> items;
+    private List<ProductDto> items;
     @JsonIgnore
     private Long userId;
 }
