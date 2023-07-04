@@ -1,0 +1,11 @@
+package com.aidatynybekkyzy.clothshop.exception;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class PasswordIncorrectException extends RuntimeException {
+    public PasswordIncorrectException(String message) {
+        super(message);
+        log.error ("PasswordIncorrectException was thrown (Exception logging)");
+    }
+}

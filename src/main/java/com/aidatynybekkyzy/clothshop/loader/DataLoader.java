@@ -3,6 +3,7 @@ package com.aidatynybekkyzy.clothshop.loader;
 import com.aidatynybekkyzy.clothshop.model.*;
 import com.aidatynybekkyzy.clothshop.repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -17,17 +18,21 @@ public class DataLoader implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public DataLoader(ProductRepository productRepository,
                       VendorRepository vendorRepository,
                       CategoryRepository categoryRepository,
                       OrderRepository orderRepository,
-                      UserRepository userRepository) {
+                      UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.productRepository = productRepository;
         this.vendorRepository = vendorRepository;
         this.categoryRepository = categoryRepository;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -36,6 +41,15 @@ public class DataLoader implements CommandLineRunner {
     }
 
     private void loadData() {
+        Role roleAdmin = new Role();
+        roleAdmin.setRoleName("ADMIN");
+
+        Role roleUser = new Role();
+        roleUser.setRoleName("USER");
+
+        roleRepository.save(roleAdmin);
+        roleRepository.save(roleUser);
+
         Vendor vendor = new Vendor();
         vendor.setId(1L);
         vendor.setVendorName("Polo");
@@ -57,14 +71,26 @@ public class DataLoader implements CommandLineRunner {
         product.setVendorId(vendor.getId());
         productRepository.save(product);
 
+        User admin = new User();
+        admin.setId(1L);
+        admin.setUsername("aidaTyn");
+        admin.setFirstName("Aida");
+        admin.setLastName("Tynybek kyzy");
+        admin.setEmail("aidatyn@gmail.com");
+        admin.setPassword(passwordEncoder.encode("password"));
+        admin.setPhone("0555001001");
+        admin.setRole(Set.of(roleAdmin));
+        userRepository.save(admin);
+
         User user = new User();
-        user.setId(1L);
-        user.setUsername("aidaTyn");
-        user.setFirstName("Aida");
-        user.setLastName("Tynybek kyzy");
-        user.setEmail("aidatyn@gmail.com");
-        user.setPassword("password");
-        user.setPhone("0555001001");
+        user.setId(2L);
+        user.setUsername("username");
+        user.setFirstName("User");
+        user.setLastName("User Last Name");
+        user.setEmail("user@example.com");
+        user.setPassword(passwordEncoder.encode("password"));
+        user.setPhone("0777001001");
+        user.setRole(Set.of(roleUser));
         userRepository.save(user);
 
         Order order = new Order();

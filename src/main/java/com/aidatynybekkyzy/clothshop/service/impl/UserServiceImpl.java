@@ -5,18 +5,14 @@ import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
 import com.aidatynybekkyzy.clothshop.exception.UserEmailAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.UserNotFoundException;
-import com.aidatynybekkyzy.clothshop.mapper.CategoryMapper;
 import com.aidatynybekkyzy.clothshop.mapper.OrderMapper;
 import com.aidatynybekkyzy.clothshop.mapper.UserMapper;
 import com.aidatynybekkyzy.clothshop.model.Order;
 import com.aidatynybekkyzy.clothshop.model.OrderStatus;
 import com.aidatynybekkyzy.clothshop.model.Product;
 import com.aidatynybekkyzy.clothshop.model.User;
-import com.aidatynybekkyzy.clothshop.repository.CategoryRepository;
 import com.aidatynybekkyzy.clothshop.repository.OrderRepository;
-import com.aidatynybekkyzy.clothshop.repository.ProductRepository;
 import com.aidatynybekkyzy.clothshop.repository.UserRepository;
-import com.aidatynybekkyzy.clothshop.service.CategoryService;
 import com.aidatynybekkyzy.clothshop.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +21,7 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -116,6 +113,11 @@ public class UserServiceImpl implements UserService {
 
         Order savedOrder = orderRepository.save(order);
         return orderMapper.toDto(savedOrder);
+    }
+
+    @Override
+    public Optional<User> findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     private void validateUniqueEmail(String email) throws UserEmailAlreadyExistsException {

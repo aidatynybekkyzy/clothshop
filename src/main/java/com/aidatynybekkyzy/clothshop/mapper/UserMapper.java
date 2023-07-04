@@ -1,5 +1,6 @@
 package com.aidatynybekkyzy.clothshop.mapper;
 
+import com.aidatynybekkyzy.clothshop.dto.RegistrationRequestDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
 import com.aidatynybekkyzy.clothshop.model.User;
 import org.mapstruct.Mapper;
@@ -18,4 +19,6 @@ public interface UserMapper {
     List<UserDto> toDtoList(List<User> users);
 
     void updateEntity(UserDto userDto, @MappingTarget User user);
+    @Mapping(source = "email", target = "email")
+    RegistrationRequestDto toUserDto(User user);
 }

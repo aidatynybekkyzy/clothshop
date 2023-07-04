@@ -1,9 +1,6 @@
 package com.aidatynybekkyzy.clothshop.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
@@ -16,6 +13,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class UserDto {
     private Long id;
     @NotNull
@@ -32,6 +30,8 @@ public class UserDto {
     private String email;
     @Size(min = 7, max = 60, message = "{validation.user.passwordSize}")
     private String password;
+    @Size(min = 7, max = 60, message = "{validation.user.passwordSize}")
+    private String confirmPassword;
     @NotNull
     @Size(max = 20)
     private String phone;

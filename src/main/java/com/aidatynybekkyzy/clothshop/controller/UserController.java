@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class UserController {
 
     @PostMapping
     @ApiOperation("Create new user ")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) throws UserEmailAlreadyExistsException {
         UserDto createdUser = userService.createUser(userDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
@@ -33,6 +35,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @ApiOperation("Get user by id ")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
         log.info("CONTROLLER Get user by id ");
         UserDto user = userService.getUserById(id);
@@ -41,13 +44,15 @@ public class UserController {
 
     @GetMapping
     @ApiOperation("Get all users")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<UserDto> users = userService.getAllUsers();
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
+    @RequestMapping(value = "/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH})
     @ApiOperation("Update user")
+    @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) throws UserEmailAlreadyExistsException {
 
         UserDto updatedUser = userService.updateUser(id, userDto);
@@ -56,6 +61,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @ApiOperation("Delete user")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
@@ -63,6 +69,7 @@ public class UserController {
 
     @GetMapping("/{userId}/orders")
     @ApiOperation("Get user's orders ")
+    @PreAuthorize("hasRole('ADMIN')or isAuthenticated()")
     public ResponseEntity<List<OrderDto>> getUserOrders(@PathVariable Long userId) {
         List<OrderDto> orders = userService.getUserOrders(userId);
         return ResponseEntity.ok(orders);
@@ -70,6 +77,7 @@ public class UserController {
 
     @PostMapping("/{userId}/orders")
     @ApiOperation("Create an order for a customer ")
+    @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     public ResponseEntity<OrderDto> createOrderForUser(@PathVariable Long userId, @RequestBody OrderDto orderDto) {
         OrderDto orderDto1 = userService.createOrderForCustomer(userId, orderDto);
         return ResponseEntity.ok(orderDto1);

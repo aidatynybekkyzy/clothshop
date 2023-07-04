@@ -12,7 +12,10 @@ import com.aidatynybekkyzy.clothshop.model.Product;
 import com.aidatynybekkyzy.clothshop.repository.CategoryRepository;
 import com.aidatynybekkyzy.clothshop.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,6 +47,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Cacheable(value = "productsCashe", key = "#categoryId")
     public List<ProductDto> getAllProductsByCategoryId(Long categoryId) {
         Category category = categoryMapper.toEntity(getCategoryById(categoryId));
 
@@ -86,6 +90,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @CacheEvict(value = "categoryCache", key = "#id")
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
             throw new CategoryNotFoundException("Category not found with id: " + id);
