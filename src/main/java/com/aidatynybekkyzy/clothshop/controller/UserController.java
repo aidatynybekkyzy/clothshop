@@ -2,6 +2,7 @@ package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
+import com.aidatynybekkyzy.clothshop.exception.AccessDeniedException;
 import com.aidatynybekkyzy.clothshop.exception.UserEmailAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.service.UserService;
 import io.swagger.annotations.Api;
@@ -28,10 +29,17 @@ public class UserController {
     @PostMapping
     @ApiOperation("Create new user ")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) throws UserEmailAlreadyExistsException {
-        UserDto createdUser = userService.createUser(userDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    public ResponseEntity<?> createUser(@RequestBody UserDto userDto) {
+        try {
+            UserDto createdUser = userService.createUser(userDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        } catch (AccessDeniedException | UserEmailAlreadyExistsException e) {
+            // Обработка ошибки доступа (FORBIDDEN)
+            String errorMessage = "Access denied: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorMessage);
+        }
     }
+
 
     @GetMapping("/{id}")
     @ApiOperation("Get user by id ")
@@ -79,7 +87,8 @@ public class UserController {
     @ApiOperation("Create an order for a customer ")
     @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     public ResponseEntity<OrderDto> createOrderForUser(@PathVariable Long userId, @RequestBody OrderDto orderDto) {
-        OrderDto orderDto1 = userService.createOrderForCustomer(userId, orderDto);
-        return ResponseEntity.ok(orderDto1);
+        OrderDto createdOrderDto = userService.createOrderForCustomer(userId, orderDto);
+        return ResponseEntity.ok(createdOrderDto);
     }
+
 }

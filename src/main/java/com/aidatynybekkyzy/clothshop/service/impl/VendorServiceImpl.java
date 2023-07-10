@@ -3,6 +3,7 @@ package com.aidatynybekkyzy.clothshop.service.impl;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.VendorDto;
 import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
+import com.aidatynybekkyzy.clothshop.exception.ProductAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.VendorAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.VendorNotFoundException;
 import com.aidatynybekkyzy.clothshop.mapper.VendorMapper;
@@ -10,6 +11,8 @@ import com.aidatynybekkyzy.clothshop.model.Product;
 import com.aidatynybekkyzy.clothshop.model.Vendor;
 import com.aidatynybekkyzy.clothshop.repository.VendorRepository;
 import com.aidatynybekkyzy.clothshop.service.VendorService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +29,7 @@ public class VendorServiceImpl implements VendorService {
     }
 
     @Override
+    @Cacheable(value = "vendorsCache")
     public List<VendorDto> getAllVendors() {
         List<Vendor> vendors = vendorRepository.findAll();
         return vendors.stream()
@@ -34,6 +38,7 @@ public class VendorServiceImpl implements VendorService {
     }
 
     @Override
+    @CacheEvict(value = "vendorsCache", allEntries = true)
     public VendorDto createVendor(VendorDto vendorDto) {
         if (vendorRepository.existsByVendorName(vendorDto.getVendorName())) {
             throw new VendorAlreadyExistsException("Vendor with this name already exists ");
@@ -44,6 +49,7 @@ public class VendorServiceImpl implements VendorService {
     }
 
     @Override
+    @CacheEvict(value = "vendorsCache", key = "#id")
     public VendorDto updateVendor(Long id, VendorDto vendorDto) {
         Vendor vendorExisting = vendorRepository.findById(id)
                 .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + vendorDto.getId()));
@@ -58,6 +64,7 @@ public class VendorServiceImpl implements VendorService {
     }
 
     @Override
+    @Cacheable(value = "vendorsCache", key = "#id")
     public VendorDto getVendorById(Long id) {
         Vendor vendor = vendorRepository.findById(id)
                 .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + id));
@@ -65,18 +72,23 @@ public class VendorServiceImpl implements VendorService {
     }
 
     @Override
+    @CacheEvict(value = "vendorsCache", key = "#id")
     public void deleteVendorById(Long id) {
         Vendor vendor = vendorRepository.findById(id)
                 .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + id));
         vendorRepository.delete(vendor);
     }
 
-    @Override //todo add exception ProductAlready exists
-    public VendorDto addProductToVendor(long id, ProductDto productDto) {
+    @Override
+    @CacheEvict(value = "vendorsCache", key = "#id")
+    public VendorDto addProductToVendor(long id, ProductDto productDto) throws ProductAlreadyExistsException {
         Vendor vendor = vendorMapper.toEntity(getVendorById(id));
 
         if (productDto.getName() == null || productDto.getName().isEmpty()) {
             throw new InvalidArgumentException("Product name is required! ");
+        }
+        if (vendor.getProducts().stream().anyMatch(p -> p.getName().equalsIgnoreCase(productDto.getName()))) {
+            throw new ProductAlreadyExistsException("Product with the same name already exists for this vendor");
         }
 
         Product product = Product.builder()
@@ -96,6 +108,7 @@ public class VendorServiceImpl implements VendorService {
     }
 
     @Override
+    @Cacheable(value = "vendorProductsCache", key = "#id")
     public List<ProductDto> getVendorProducts(long id) {
         Vendor vendor = vendorMapper.toEntity(getVendorById(id));
         return vendorMapper.toProductDtoList(vendor.getProducts());

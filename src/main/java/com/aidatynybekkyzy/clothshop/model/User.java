@@ -47,7 +47,7 @@ public class User implements UserDetails {
     @Column(name = "password", nullable = false)
     @JsonIgnore
     private String password;
-    @Transient
+    @Transient // чтобы не сохранять это поле в бд (не сериализовать)
     @JsonIgnore
     private String confirmPassword;
     @Column(name = "phone", length = 20, nullable = false, unique = true)

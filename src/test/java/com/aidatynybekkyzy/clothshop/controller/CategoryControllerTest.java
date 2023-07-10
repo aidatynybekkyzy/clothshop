@@ -2,6 +2,9 @@ package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.dto.CategoryDto;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
+import com.aidatynybekkyzy.clothshop.exception.CategoryAlreadyExistsException;
+import com.aidatynybekkyzy.clothshop.exception.CategoryNotFoundException;
+import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
 import com.aidatynybekkyzy.clothshop.service.impl.CategoryServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -87,6 +90,38 @@ class CategoryControllerTest {
 
         verify(categoryService, times(1)).createCategory(any(CategoryDto.class));
     }
+    @Test
+    public void testCreateCategory_InvalidArgumentException() throws Exception {
+        final CategoryDto invalidCategory = CategoryDto.builder()
+                .categoryName("") // Empty category name
+                .build();
+
+        when(categoryService.createCategory(any(CategoryDto.class))).thenThrow(InvalidArgumentException.class);
+
+        mockMvc.perform(post("/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(invalidCategory)))
+                .andExpect(status().isBadRequest());
+
+        verify(categoryService, times(1)).createCategory(any(CategoryDto.class));
+    }
+    @Test
+    @DisplayName("Get Category by Id - Error: Category Already Exists")
+    public void testCreateCategory_CategoryAlreadyExistsException() throws Exception {
+        final CategoryDto existingCategory = CategoryDto.builder()
+                .categoryName("Existing Category")
+                .build();
+
+        when(categoryService.createCategory(any(CategoryDto.class))).thenThrow(CategoryAlreadyExistsException.class);
+
+        mockMvc.perform(post("/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(existingCategory)))
+                .andExpect(status().isConflict());
+
+        verify(categoryService, times(1)).createCategory(any(CategoryDto.class));
+    }
+
 
     @Test
     @DisplayName("Get Category by Id ")
@@ -98,6 +133,19 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$.categoryName").value(mockCategory.getCategoryName()))
                 .andDo(print());
     }
+    @Test
+    @DisplayName("Get Category by Id - Error: Category Not Found")
+    void getCategory_categoryNotFound() throws Exception {
+        final Long categoryId = 1L;
+
+        when(categoryService.getCategoryById(categoryId)).thenThrow(CategoryNotFoundException.class);
+
+        mockMvc.perform(get("/categories/{id}", categoryId))
+                .andExpect(status().isNotFound());
+
+        verify(categoryService, times(1)).getCategoryById(categoryId);
+    }
+
 
     @Test
     @DisplayName("Get All Categories")
@@ -130,6 +178,26 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$.categoryName").value(updatedCategoryDto.getCategoryName()));
 
     }
+    @Test
+    @DisplayName("Update Category - Error: Invalid Argument")
+    void updateCategory_invalidArgument() throws Exception {
+        final Long categoryId = 1L;
+        final CategoryDto updatedCategoryDto = CategoryDto.builder()
+                .id(categoryId)
+                .categoryName(null)
+                .build();
+
+        when(categoryService.updateCategory(eq(categoryId), any(CategoryDto.class)))
+                .thenThrow(InvalidArgumentException.class);
+
+        mockMvc.perform(patch("/categories/{id}", categoryId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(updatedCategoryDto)))
+                .andExpect(status().isBadRequest());
+
+        verify(categoryService, times(1)).updateCategory(eq(categoryId), any(CategoryDto.class));
+    }
+
 
     @Test
     @DisplayName("Delete Category by Id ")
@@ -139,6 +207,18 @@ class CategoryControllerTest {
                 .andExpect(status().isNoContent())
                 .andDo(print());
         verify(categoryService, times(1)).deleteCategory(id);
+    }
+    @Test
+    @DisplayName("Delete Category - Error: Category Not Found")
+    void deleteCategory_categoryNotFound() throws Exception {
+        final Long categoryId = 1L;
+        doThrow(CategoryNotFoundException.class)
+                .when(categoryService).deleteCategory(categoryId);
+
+        mockMvc.perform(delete("/categories/{id}", categoryId))
+                .andExpect(status().isNotFound());
+
+        verify(categoryService, times(1)).deleteCategory(categoryId);
     }
 
     @Test

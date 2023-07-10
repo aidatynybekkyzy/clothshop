@@ -14,6 +14,8 @@ import com.aidatynybekkyzy.clothshop.repository.OrderRepository;
 import com.aidatynybekkyzy.clothshop.repository.ProductRepository;
 import com.aidatynybekkyzy.clothshop.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,18 +39,21 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Cacheable(value = "ordersCache")
     public List<OrderDto> getOrders() {
         List<Order> orders = orderRepository.findAll();
         return orderMapper.toDtoList(orders);
     }
 
     @Override
+    @Cacheable(value = "ordersCache", key = "#id")
     public OrderDto getOrderById(Long id) {
         Order order = getOrderByIdIfExists(id);
         return orderMapper.toDto(order);
     }
 
     @Override
+    @CacheEvict(value = "ordersCache", allEntries = true)
     public OrderDto addItem(Long orderId, ProductDto productDto) {
         Order order = orderMapper.toEntity(getOrderById(orderId));
 
@@ -66,6 +71,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @CacheEvict(value = "ordersCache", key = "#id")
     public void cancelOrderById(Long id) {
         Order order = getOrderByIdIfExists(id);
         log.info("Canceling order SERVICE ");
@@ -74,6 +80,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @CacheEvict(value = "ordersCache", key = "#id")
     public void deleteOrderById(Long id) {
         Order order = getOrderByIdIfExists(id);
         log.info("Deleting order SERVICE ");
@@ -81,6 +88,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Cacheable(value = "orderItemsCache", key = "#orderId + '-' + #itemId")
     public ProductDto getItemOrder(Long orderId, Long itemId) {
         Order order = getOrderByIdIfExists(orderId);
         Product item = order.getItems()
@@ -92,12 +100,14 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Cacheable(value = "orderItemsCache", key = "#orderId")
     public Set<ProductDto> getAllOrderItems(Long orderId) {
         Order order = getOrderByIdIfExists(orderId);
         return orderMapper.toItemDtoSet(order.getItems());
     }
 
     @Override
+    @CacheEvict(value = "orderItemsCache", key = "#orderId + '-' + #itemId")
     public void deleteItemOrder(Long orderId, Long itemId) {
         Order order = getOrderByIdIfExists(orderId);
         Product item = order.getItems()
@@ -111,6 +121,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @CacheEvict(value = "ordersCache", key = "#id")
     public void purchaseOrder(Long id) {
         Order order = getOrderByIdIfExists(id);
         log.info("Purchasing order and changing status SERVICE ");

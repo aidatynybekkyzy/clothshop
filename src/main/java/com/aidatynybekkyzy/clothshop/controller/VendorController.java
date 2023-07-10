@@ -2,6 +2,7 @@ package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.VendorDto;
+import com.aidatynybekkyzy.clothshop.exception.ProductAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;
 import com.aidatynybekkyzy.clothshop.service.VendorService;
 import io.swagger.annotations.Api;
@@ -67,7 +68,7 @@ public class VendorController {
     @PostMapping("/{id}/products")
     @PreAuthorize("hasRole('ADMIN')")
     @ApiOperation("Adding product to a vendor")
-    public ResponseEntity<VendorDto> addProductToVendor(@PathVariable long id, @RequestBody ProductDto productDto) {
+    public ResponseEntity<VendorDto> addProductToVendor(@PathVariable long id, @RequestBody ProductDto productDto) throws ProductAlreadyExistsException {
         VendorDto updatedVendor = vendorService.addProductToVendor(id, productDto);
         return ResponseEntity.ok(updatedVendor);
     }

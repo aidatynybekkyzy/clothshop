@@ -2,6 +2,7 @@ package com.aidatynybekkyzy.clothshop.service;
 
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.VendorDto;
+import com.aidatynybekkyzy.clothshop.exception.ProductAlreadyExistsException;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface VendorService {
 
     void deleteVendorById(Long id);
 
-    VendorDto addProductToVendor(long id, ProductDto productDto);
+    VendorDto addProductToVendor(long id, ProductDto productDto) throws ProductAlreadyExistsException;
 
     List<ProductDto> getVendorProducts(long id);
 

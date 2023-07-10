@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 public class ProductDto {
     @NotNull
     private Long id;
-    @NotEmpty
+    @NotEmpty @NotNull
     @Size(min = 4, max = 100)
     private String name;
     @NotNull

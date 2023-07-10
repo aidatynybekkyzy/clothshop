@@ -35,19 +35,24 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override //todo categoryId returns null instead of actualID
     public CategoryDto createCategory(CategoryDto categoryDto) throws CategoryAlreadyExistsException {
-            Category category = categoryMapper.toEntity(categoryDto);
-            if (category.getCategoryName() == null || category.getCategoryName().isEmpty()) {
-                throw new InvalidArgumentException("Category name is required");
-            }
-            if (categoryRepository.existsByCategoryName(category.getCategoryName())) {
-                throw new CategoryAlreadyExistsException("Category already exists with name: " + category.getCategoryName());
-            }
-            Category savedCategory = categoryRepository.save(category);
-            return categoryMapper.toDto(savedCategory);
+
+        Category category = categoryMapper.toEntity(categoryDto);
+
+        if (category.getCategoryName() == null || category.getCategoryName().isEmpty()) {
+            throw new InvalidArgumentException("Category name is required");
+        }
+        if (categoryRepository.existsByCategoryName(category.getCategoryName())) {
+            throw new CategoryAlreadyExistsException("Category already exists with name: " + category.getCategoryName());
+        }
+        Long categoryId = categoryDto.getId();
+        category.setId(categoryId);
+
+        Category savedCategory = categoryRepository.save(category);
+        return categoryMapper.toDto(savedCategory);
     }
 
     @Override
-    @Cacheable(value = "productsCashe", key = "#categoryId")
+    @Cacheable(value = "productsCaсhe", key = "#categoryId")
     public List<ProductDto> getAllProductsByCategoryId(Long categoryId) {
         Category category = categoryMapper.toEntity(getCategoryById(categoryId));
 
@@ -65,6 +70,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Cacheable(value = "categoriesCache")
     public List<CategoryDto> getAllCategories() {
         List<Category> categories = categoryRepository.findAll();
         return categories.stream()
@@ -90,7 +96,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    @CacheEvict(value = "categoryCache", key = "#id")
+    @CacheEvict(value = "categoriesCache", key = "#id")
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
             throw new CategoryNotFoundException("Category not found with id: " + id);

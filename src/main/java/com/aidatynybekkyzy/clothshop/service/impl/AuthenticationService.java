@@ -79,6 +79,7 @@ public class AuthenticationService {
 
             return AuthenticationResponseDto.builder()
                     .accessToken(jwtToken)
+                    .email(request.getEmail())
                     .build();
         } catch (BadCredentialsException exception){
             throw new PasswordIncorrectException("Invalid password");

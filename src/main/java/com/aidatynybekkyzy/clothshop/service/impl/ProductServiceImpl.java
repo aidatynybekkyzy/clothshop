@@ -5,16 +5,15 @@ import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.exception.ProductAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.ProductNotFoundException;
 import com.aidatynybekkyzy.clothshop.exception.VendorNotFoundException;
-import com.aidatynybekkyzy.clothshop.mapper.CategoryMapper;
 import com.aidatynybekkyzy.clothshop.mapper.ProductMapper;
 import com.aidatynybekkyzy.clothshop.model.Product;
 import com.aidatynybekkyzy.clothshop.model.Vendor;
-import com.aidatynybekkyzy.clothshop.repository.CategoryRepository;
 import com.aidatynybekkyzy.clothshop.repository.ProductRepository;
 import com.aidatynybekkyzy.clothshop.repository.VendorRepository;
-import com.aidatynybekkyzy.clothshop.service.CategoryService;
 import com.aidatynybekkyzy.clothshop.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,6 +34,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = "productsCache", allEntries = true)
     public ProductDto createProduct(ProductDto productDto) throws ProductAlreadyExistsException {
         if (productDto.getName() == null || productDto.getName().isEmpty()) {
             throw new InvalidArgumentException("Product name is required ");
@@ -50,13 +50,14 @@ public class ProductServiceImpl implements ProductService {
                 .price(productDto.getPrice())
                 .quantity(productDto.getQuantity())
                 .categoryId(productDto.getCategoryId())
-                .vendorId(productDto.getVendorId())
+                .vendorId(vendor.getId())
                 .build();
         productRepository.save(product);
         return productMapper.toDto(product);
     }
 
     @Override
+    @Cacheable(value = "productsCache", key = "#id")
     public ProductDto getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
@@ -64,6 +65,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "productsCache")
     public List<ProductDto> getAllProducts() {
         List<Product> products = productRepository.findAll();
         return products.stream()
@@ -72,6 +74,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = "productsCache", key = "#id")
     public ProductDto updateProduct(Long id, ProductDto productDTO) {
         Product existingProduct = productMapper.toEntity(getProductById(id));
 
@@ -87,6 +90,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = "productsCache", key = "#id")
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
             throw new ProductNotFoundException("Product not found with id: " + id);

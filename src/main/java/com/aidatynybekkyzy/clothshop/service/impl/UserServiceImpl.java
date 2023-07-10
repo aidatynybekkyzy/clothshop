@@ -15,6 +15,8 @@ import com.aidatynybekkyzy.clothshop.repository.OrderRepository;
 import com.aidatynybekkyzy.clothshop.repository.UserRepository;
 import com.aidatynybekkyzy.clothshop.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
@@ -40,12 +42,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = "usersCache")
     public List<UserDto> getAllUsers() {
         List<User> users = userRepository.findAll();
         return userMapper.toDtoList(users);
     }
 
     @Override
+    @Cacheable(value = "usersCache", key = "#id")
     public UserDto getUserById(Long id) {
         log.info("SERVICE  Get user by id");
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
@@ -53,6 +57,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "usersCache", allEntries = true)
     public UserDto createUser( @Valid UserDto userDto) throws UserEmailAlreadyExistsException {
         validateUniqueEmail(userDto.getEmail());
         User user = userMapper.toEntity(userDto);
@@ -61,6 +66,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "usersCache", key = "#id")
     public UserDto updateUser(Long id, UserDto userDto) throws UserEmailAlreadyExistsException {
         User existingUser = userMapper.toEntity(getUserById(id));
 
@@ -72,12 +78,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "usersCache", key = "#id")
     public void deleteUser(Long id) {
         User user = userMapper.toEntity(getUserById(id));
         userRepository.delete(user);
     }
 
     @Override
+    @Cacheable(value = "ordersCache", key = "#userId")
     public List<OrderDto> getUserOrders(Long userId) {
         User user = userMapper.toEntity(getUserById(userId));
         List<Order> orders = orderRepository.findByUser(user);
@@ -86,6 +94,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "ordersCache", key = "#userId")
     public OrderDto createOrderForCustomer(Long userId, OrderDto orderDto) {
         User user = userMapper.toEntity(getUserById(userId));
 

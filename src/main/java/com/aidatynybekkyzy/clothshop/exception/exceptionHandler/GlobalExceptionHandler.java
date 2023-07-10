@@ -4,6 +4,7 @@ import com.aidatynybekkyzy.clothshop.exception.*;
 import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,17 +29,27 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                                  HttpHeaders headers,
-                                                                  HttpStatus status,
-                                                                  WebRequest request) {
+    protected @NotNull ResponseEntity<Object> handleMethodArgumentNotValid(@NotNull MethodArgumentNotValidException ex,
+                                                                           @NotNull HttpHeaders headers,
+                                                                           @NotNull HttpStatus status,
+                                                                           @NotNull WebRequest request) {
         ApiResponse errorResponse = new ApiResponse(HttpStatus.UNPROCESSABLE_ENTITY.value(), "Validation error. Check 'errors' field for details.", ex.getMessage());
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             errorResponse.addValidationError(fieldError.getField(), fieldError.getDefaultMessage());
         }
         return ResponseEntity.unprocessableEntity().body(errorResponse);
     }
-
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler({AccessDeniedException.class})
+    public ResponseEntity<Object> accessDenied(AccessDeniedException exception, WebRequest request) {
+        log.error("Authorization has been denied for this request");
+        return buildErrorResponse(exception, HttpStatus.FORBIDDEN, request);
+    }
+    @ExceptionHandler(PasswordIncorrectException.class)
+    public ResponseEntity<Object> handlePasswordIncorrectException(PasswordIncorrectException e) {
+        String errorMessage = "Incorrect password: " + e.getMessage();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+    }
     @ExceptionHandler({CategoryNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<Object> handleCategoryNotFoundException(CategoryNotFoundException e, WebRequest request) {
@@ -60,10 +71,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
     }
     @ExceptionHandler({CategoryAlreadyExistsException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseEntity<Object> handleCategoryAlreadyExistsException(CategoryAlreadyExistsException e, WebRequest request) {
         log.error("Failed to create/update user " + e);
-        return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
+        return buildErrorResponse(e, HttpStatus.CONFLICT, request);
     }
 
     @ExceptionHandler({UserNotFoundException.class})
@@ -112,6 +123,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 
 
+
     /**
      * Этот метод buildErrorResponse создает и возвращает объект ResponseEntity<Object> для обработки ошибок.
      * Он принимает следующие параметры:
@@ -148,12 +160,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Override
-    public ResponseEntity<Object> handleExceptionInternal(
-            Exception ex,
+    protected @NotNull ResponseEntity<Object> handleExceptionInternal(
+            @NotNull Exception ex,
             Object body,
-            HttpHeaders headers,
-            HttpStatus status,
-            WebRequest request) {
+            @NotNull HttpHeaders headers,
+            @NotNull HttpStatus status,
+            @NotNull WebRequest request) {
 
         return buildErrorResponse(ex, status, request);
     }
