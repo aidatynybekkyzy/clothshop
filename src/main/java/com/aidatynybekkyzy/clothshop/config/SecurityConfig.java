@@ -4,7 +4,6 @@ import com.aidatynybekkyzy.clothshop.security.jwt.JWTAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -23,28 +22,23 @@ public class SecurityConfig {
     private final LogoutHandler logoutHandler;
 
     private static final String AUTH_END_POINT = "/auth/**";
-    private static final String CATEGORY_END_POINT = "/categories/**";
-    private static final String ORDER_END_POINT = "/orders/**";
-    private static final String VENDOR_END_POINT = "/vendors/**";
-    private static final String PRODUCT_END_POINT = "/products/**";
-    private static final String USER_END_POINT = "/users/**";
-    private static final String USER_END_CREATEORDER = "/users/{userId}/orders";
+    private static final String CATEGORY_ADMIN = "/categories/admin/**";
+    private static final String ORDER_ADMIN = "/orders/admin/**";
+    private static final String VENDOR_ADMIN = "/vendors/admin/**";
+    private static final String PRODUCT_ADMIN = "/products/admin/**";
+    private static final String USER_ADMIN = "/users/admin/**";
     private static final String ADMIN = "ADMIN";
-    private static final String USER = "USER";
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf()
                 .disable()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.GET, VENDOR_END_POINT,CATEGORY_END_POINT,PRODUCT_END_POINT,USER_END_POINT).permitAll()
                 .antMatchers(AUTH_END_POINT).permitAll()
-                .antMatchers(USER_END_CREATEORDER).hasRole(USER)
-                .antMatchers(HttpMethod.POST)
+                .antMatchers(USER_ADMIN, ORDER_ADMIN,CATEGORY_ADMIN,PRODUCT_ADMIN,VENDOR_ADMIN)
                 .hasRole(ADMIN)
                 .anyRequest()
-                .hasAnyRole(USER, ADMIN)
+                .authenticated()
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

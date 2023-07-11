@@ -27,8 +27,7 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/createProduct")
     @ApiOperation("Creating new product")
     public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) throws ProductAlreadyExistsException {
         ProductDto createdProduct = productService.createProduct(productDto);
@@ -50,8 +49,7 @@ public class ProductController {
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
-    @PatchMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/admin/{id}")
     @ApiOperation("Updating the product")
     public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto productDto) {
         ProductDto updatedProduct = productService.updateProduct(id, productDto);
@@ -65,16 +63,14 @@ public class ProductController {
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(photo);
     }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/admin/{id}")
     @ApiOperation("Deleting the product by id")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/{id}/photo")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/{id}/photo")
     @ApiOperation("Adding photo to a product")
     public ResponseEntity<?> addPhoto(@PathVariable Long id, @RequestParam("photo") MultipartFile photo) throws IOException {
         byte[] photoBytes = photo.getBytes();

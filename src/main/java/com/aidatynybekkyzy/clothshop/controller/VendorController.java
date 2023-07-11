@@ -31,16 +31,14 @@ public class VendorController {
         return ResponseEntity.ok(vendors);
     }
 
-    @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/createVendor")
     @ApiOperation("Creating new vendor")
     public ResponseEntity<VendorDto> createVendor(@RequestBody VendorDto vendorDto) {
         VendorDto createdVendor = vendorService.createVendor(vendorDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdVendor);
     }
 
-    @PatchMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/admin/{id}")
     @ApiOperation("Updating the vendor")
     public ResponseEntity<VendorDto> updateVendor(@PathVariable Long id, @RequestBody VendorDto vendorDto) {
         VendorDto updatedVendor = vendorService.updateVendor(id, vendorDto);
@@ -56,7 +54,7 @@ public class VendorController {
 
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @ApiOperation("Deleting the vendor by id")
     public ResponseEntity<ApiResponse> deleteVendorById(@PathVariable Long id) {
@@ -65,8 +63,7 @@ public class VendorController {
 
     }
 
-    @PostMapping("/{id}/products")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/{id}/products")
     @ApiOperation("Adding product to a vendor")
     public ResponseEntity<VendorDto> addProductToVendor(@PathVariable long id, @RequestBody ProductDto productDto) throws ProductAlreadyExistsException {
         VendorDto updatedVendor = vendorService.addProductToVendor(id, productDto);

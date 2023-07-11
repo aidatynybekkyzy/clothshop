@@ -34,7 +34,6 @@ public class UserController {
             UserDto createdUser = userService.createUser(userDto);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
         } catch (AccessDeniedException | UserEmailAlreadyExistsException e) {
-            // Обработка ошибки доступа (FORBIDDEN)
             String errorMessage = "Access denied: " + e.getMessage();
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorMessage);
         }
@@ -43,14 +42,14 @@ public class UserController {
 
     @GetMapping("/{id}")
     @ApiOperation("Get user by id ")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
         log.info("CONTROLLER Get user by id ");
         UserDto user = userService.getUserById(id);
         return ResponseEntity.ok(user);
     }
 
-    @GetMapping
+    @GetMapping("/admin/getUsers")
     @ApiOperation("Get all users")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserDto>> getAllUsers() {
@@ -67,9 +66,8 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/{id}")
     @ApiOperation("Delete user")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
@@ -87,6 +85,13 @@ public class UserController {
     @ApiOperation("Create an order for a customer ")
     @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     public ResponseEntity<OrderDto> createOrderForUser(@PathVariable Long userId, @RequestBody OrderDto orderDto) {
+        OrderDto createdOrderDto = userService.createOrderForCustomer(userId, orderDto);
+        return ResponseEntity.ok(createdOrderDto);
+    }
+    @PostMapping("/admin/{userId}/orders")
+    @ApiOperation("Create an order for a customer ")
+    @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
+    public ResponseEntity<OrderDto> createOrderForUserByAdmin(@PathVariable Long userId, @RequestBody OrderDto orderDto) {
         OrderDto createdOrderDto = userService.createOrderForCustomer(userId, orderDto);
         return ResponseEntity.ok(createdOrderDto);
     }
