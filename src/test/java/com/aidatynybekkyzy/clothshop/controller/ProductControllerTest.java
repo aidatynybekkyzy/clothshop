@@ -89,72 +89,58 @@ class ProductControllerTest {
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Missing Product Name")
     public void createProduct_missingProductName() throws Exception {
-        // Test data
         ProductDto productDto = createValidProductDto();
         productDto.setName(null);
 
-        // Perform the request and expect status 400 (BAD REQUEST)
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(productDto)))
                 .andExpect(status().isBadRequest());
 
-        // Verify that the service method was not called
         verifyNoInteractions(productService);
     }
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Empty Product Name")
     public void createProduct_emptyProductName() throws Exception {
-        // Test data
         ProductDto productDto = createValidProductDto();
         productDto.setName("");
 
-        // Perform the request and expect status 400 (BAD REQUEST)
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(productDto)))
                 .andExpect(status().isBadRequest());
 
-        // Verify that the service method was not called
         verifyNoInteractions(productService);
     }
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Product with Same Name Already Exists")
     public void createProduct_productNameAlreadyExists() throws Exception {
-        // Test data
         ProductDto productDto = createValidProductDto();
 
-        // Mock the productRepository.existsByName() to return true (product with same name already exists)
         when(productRepository.existsByName(productDto.getName())).thenReturn(true);
 
-        // Perform the request and expect status 409 (CONFLICT)
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(productDto)))
                 .andExpect(status().isConflict());
 
-        // Verify that the service method was not called
         verifyNoInteractions(productService);
     }
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Vendor Not Found")
     public void createProduct_vendorNotFound() throws Exception {
-        // Test data
         ProductDto productDto = createValidProductDto();
 
-        // Mock the vendorRepository.findById() to return Optional.empty() (vendor not found)
         when(vendorRepository.findById(productDto.getVendorId())).thenReturn(Optional.empty());
 
-        // Perform the request and expect status 404 (NOT FOUND)
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(productDto)))
                 .andExpect(status().isNotFound());
 
-        // Verify that the service method was not called
         verifyNoInteractions(productService);
     }
 

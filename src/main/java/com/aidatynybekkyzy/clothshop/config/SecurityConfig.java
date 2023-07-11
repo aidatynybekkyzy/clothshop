@@ -28,6 +28,7 @@ public class SecurityConfig {
     private static final String VENDOR_END_POINT = "/vendors/**";
     private static final String PRODUCT_END_POINT = "/products/**";
     private static final String USER_END_POINT = "/users/**";
+    private static final String USER_END_CREATEORDER = "/users/{userId}/orders";
     private static final String ADMIN = "ADMIN";
     private static final String USER = "USER";
 
@@ -39,8 +40,9 @@ public class SecurityConfig {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.GET, VENDOR_END_POINT,CATEGORY_END_POINT,PRODUCT_END_POINT,USER_END_POINT).permitAll()
                 .antMatchers(AUTH_END_POINT).permitAll()
-                .antMatchers(CATEGORY_END_POINT,VENDOR_END_POINT,PRODUCT_END_POINT,ORDER_END_POINT, USER_END_POINT)
-                .authenticated()
+                .antMatchers(USER_END_CREATEORDER).hasRole(USER)
+                .antMatchers(HttpMethod.POST)
+                .hasRole(ADMIN)
                 .anyRequest()
                 .hasAnyRole(USER, ADMIN)
                 .and()
