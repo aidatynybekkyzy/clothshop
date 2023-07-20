@@ -5,19 +5,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Tolerate;
-import org.hibernate.Hibernate;
 
 import javax.persistence.*;
-
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name = "vendors")
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
 public class Vendor {
 
     @Id
@@ -42,19 +38,5 @@ public class Vendor {
         this.id = id;
         this.vendorName = vendorName;
         this.products = products;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Vendor vendor = (Vendor) o;
-        return id != null && Objects.equals(id, vendor.id) &&
-                vendorName != null && Objects.equals(vendorName, vendor.vendorName);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, vendorName);
     }
 }

@@ -2,21 +2,16 @@ package com.aidatynybekkyzy.clothshop.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
-@Data
+
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Token {
-    @Id
-    @GeneratedValue
-    public Long id;
-
+public class Token extends AbstractEntity<Long>{
     @Column(unique = true)
     public String token;
 

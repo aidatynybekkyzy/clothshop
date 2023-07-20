@@ -3,9 +3,10 @@ package com.aidatynybekkyzy.clothshop.model;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.math.BigDecimal;
-import java.util.Objects;
 
 @Entity
 @Getter
@@ -15,11 +16,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Product {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Product extends AbstractEntity<Long> {
 
     @Column(length = 100, nullable = false)
     private String name;
@@ -43,21 +40,5 @@ public class Product {
         this.quantity = quantity;
         this.categoryId = category;
         this.vendorId = vendor;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Product product = (Product) o;
-        return Objects.equals(id, product.id) &&
-                Objects.equals(name, product.name) &&
-                Objects.equals(price, product.price) &&
-                Objects.equals(quantity, product.quantity);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, price, photo, quantity);
     }
 }

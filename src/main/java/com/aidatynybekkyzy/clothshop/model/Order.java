@@ -15,11 +15,7 @@ import java.util.Set;
 @Table(name = "orders")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-public class Order {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Order extends AbstractEntity<Long> {
     @CreationTimestamp
     private LocalDateTime shipDate;
     @NotNull
@@ -48,17 +44,5 @@ public class Order {
             }
             items.add(orderItem);
         }
-    }
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Order order = (Order) o;
-        return id != null && id.equals(order.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
     }
 }
