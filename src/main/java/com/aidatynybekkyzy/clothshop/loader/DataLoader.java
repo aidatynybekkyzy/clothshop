@@ -1,6 +1,7 @@
 package com.aidatynybekkyzy.clothshop.loader;
 
 import com.aidatynybekkyzy.clothshop.model.*;
+import com.aidatynybekkyzy.clothshop.model.OrderStatus;
 import com.aidatynybekkyzy.clothshop.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;

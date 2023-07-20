@@ -1,5 +1,6 @@
 package com.aidatynybekkyzy.clothshop.model;
 
+
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

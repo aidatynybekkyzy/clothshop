@@ -28,6 +28,7 @@ public class SecurityConfig {
     private static final String PRODUCT_ADMIN = "/products/admin/**";
     private static final String USER_ADMIN = "/users/admin/**";
     private static final String ADMIN = "ADMIN";
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -35,8 +36,7 @@ public class SecurityConfig {
                 .disable()
                 .authorizeRequests()
                 .antMatchers(AUTH_END_POINT).permitAll()
-                .antMatchers(USER_ADMIN, ORDER_ADMIN,CATEGORY_ADMIN,PRODUCT_ADMIN,VENDOR_ADMIN)
-                .hasRole(ADMIN)
+                .antMatchers(VENDOR_ADMIN).hasRole(ADMIN)
                 .anyRequest()
                 .authenticated()
                 .and()
