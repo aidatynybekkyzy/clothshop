@@ -1,12 +1,11 @@
 package com.aidatynybekkyzy.clothshop.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
-
+@Setter
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

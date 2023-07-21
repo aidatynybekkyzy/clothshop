@@ -14,11 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Vendor {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Vendor extends AbstractEntity<Long> {
 
     @Column(length = 100, nullable = false)
     private String vendorName;

@@ -1,12 +1,12 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
 
+import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.VendorDto;
 import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
 import com.aidatynybekkyzy.clothshop.repository.VendorRepository;
 import com.aidatynybekkyzy.clothshop.service.impl.VendorServiceImpl;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
@@ -45,7 +44,7 @@ class VendorControllerTest {
 
     final VendorDto vendorDto = VendorDto.builder()
             .id(ID)
-            .vendorName("Test vendor name")
+            .vendorName(VENDOR_NAME)
             .build();
     List<ProductDto> products = Arrays.asList(
             new ProductDto(1L, "Product 1", new BigDecimal(150), 4),
@@ -73,7 +72,7 @@ class VendorControllerTest {
                 .build();
         final List<VendorDto> vendorDtos = Arrays.asList(vendor1, vendor2);
         when(vendorService.getAllVendors()).thenReturn(vendorDtos);
-        mockMvc.perform(MockMvcRequestBuilders.get("/vendors"))
+        mockMvc.perform(get("/vendors"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value(1L))
@@ -90,7 +89,7 @@ class VendorControllerTest {
 
         mockMvc.perform(post("/vendors")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(vendorDto)))
+                        .content(JsonUtils.asJsonString(vendorDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.vendorName", is("Test vendor name")));
@@ -108,7 +107,7 @@ class VendorControllerTest {
 
         mockMvc.perform(patch("/vendors/{id}", ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(vendorDto)))
+                        .content(JsonUtils.asJsonString(vendorDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(updatedVendor.getId()))
                 .andExpect(jsonPath("$.vendorName").value(updatedVendor.getVendorName()));
@@ -155,7 +154,7 @@ class VendorControllerTest {
 
         mockMvc.perform(post("/vendors/{id}/products", vendorId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(productDto)))
+                .content(JsonUtils.asJsonString(productDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(updatedVendor.getId()))
                 .andExpect(jsonPath("$.vendorName").value(updatedVendor.getVendorName()));
@@ -182,12 +181,5 @@ class VendorControllerTest {
 
     }
 
-    private String asJsonString(Object obj) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 }

@@ -1,9 +1,9 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
+import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.*;
 import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
 import com.aidatynybekkyzy.clothshop.service.impl.UserServiceImpl;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -111,7 +111,7 @@ class UserControllerTest {
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(user)))
+                        .content(JsonUtils.asJsonString(user)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.username", is("limbo")))
@@ -181,7 +181,7 @@ class UserControllerTest {
         when(userService.updateUser(eq(ID), any(UserDto.class))).thenReturn(updatedUser);
         mockMvc.perform(patch("/users/{id}", ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(user))
+                        .content(JsonUtils.asJsonString(user))
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
@@ -242,7 +242,7 @@ class UserControllerTest {
         when(userService.createOrderForCustomer(eq(userId), any(OrderDto.class))).thenReturn(createdOrder);
         mockMvc.perform(post("/users/{userId}/orders", userId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(order1))
+                        .content(JsonUtils.asJsonString(order1))
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
@@ -259,12 +259,4 @@ class UserControllerTest {
     }
 
 
-    private String asJsonString(Object obj) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

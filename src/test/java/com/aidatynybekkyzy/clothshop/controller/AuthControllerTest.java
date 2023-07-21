@@ -8,7 +8,7 @@ import com.aidatynybekkyzy.clothshop.model.response.AuthenticationResponseDto;
 import com.aidatynybekkyzy.clothshop.security.jwt.JwtTokenProvider;
 import com.aidatynybekkyzy.clothshop.service.UserService;
 import com.aidatynybekkyzy.clothshop.service.impl.AuthenticationService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.aidatynybekkyzy.clothshop.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -84,7 +84,7 @@ class AuthControllerTest {
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(requestDto)))
+                        .content(JsonUtils.asJsonString(requestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email", is("user@test.com")))
                 .andExpect(jsonPath("$.firstName", is("User")))
@@ -119,7 +119,7 @@ class AuthControllerTest {
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(requestDto)))
+                        .content(JsonUtils.asJsonString(requestDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").value(responseDto.getAccessToken()))
                 .andDo(print());
@@ -131,14 +131,5 @@ class AuthControllerTest {
         mockMvc.perform(post("/auth/logout"))
                 .andExpect(status().isOk())
                 .andDo(print());
-    }
-
-    private String asJsonString(Object obj) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 }

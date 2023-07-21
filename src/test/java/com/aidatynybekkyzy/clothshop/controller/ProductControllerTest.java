@@ -1,21 +1,21 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
-import com.aidatynybekkyzy.clothshop.TestCacheConfig;
+import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
+import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
 import com.aidatynybekkyzy.clothshop.repository.ProductRepository;
 import com.aidatynybekkyzy.clothshop.repository.VendorRepository;
 import com.aidatynybekkyzy.clothshop.service.impl.ProductServiceImpl;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -23,12 +23,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-@ContextConfiguration(classes = TestCacheConfig.class)
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension.class)
 class ProductControllerTest {
@@ -47,15 +48,19 @@ class ProductControllerTest {
     private static final Integer PRODUCT_QUANTITY = 5;
     private static final Long PRODUCT_CATEGORY_ID = 1L;
 
+    @Autowired
     ProductControllerTest(VendorRepository vendorRepository, ProductRepository productRepository) {
         this.vendorRepository = vendorRepository;
         this.productRepository = productRepository;
     }
 
     @BeforeEach
-    public void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(productController).build();
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(productController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
     }
+
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Success")
@@ -74,7 +79,7 @@ class ProductControllerTest {
 
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(productDto)))
+                        .content(JsonUtils.asJsonString(productDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(PRODUCT_ID))
                 .andExpect(jsonPath("$.name").value(PRODUCT_NAME))
@@ -85,20 +90,23 @@ class ProductControllerTest {
 
         verify(productService, times(1)).createProduct(any(ProductDto.class));
     }
+
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Missing Product Name")
     public void createProduct_missingProductName() throws Exception {
         ProductDto productDto = createValidProductDto();
         productDto.setName(null);
+        when(productService.createProduct(any(ProductDto.class))).thenReturn(productDto);
 
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(productDto)))
+                        .content(JsonUtils.asJsonString(productDto)))
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(productService);
     }
+
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Empty Product Name")
@@ -106,13 +114,17 @@ class ProductControllerTest {
         ProductDto productDto = createValidProductDto();
         productDto.setName("");
 
-        mockMvc.perform(post("/products")
+        when(productService.createProduct(any(ProductDto.class))).thenReturn(productDto);
+
+        mockMvc.perform(post("/products/admin/createProduct")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(productDto)))
+                        .content(JsonUtils.asJsonString(productDto)))
                 .andExpect(status().isBadRequest());
+        assertEquals(productDto.getName(), "");
 
         verifyNoInteractions(productService);
     }
+
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Product with Same Name Already Exists")
@@ -121,13 +133,14 @@ class ProductControllerTest {
 
         when(productRepository.existsByName(productDto.getName())).thenReturn(true);
 
-        mockMvc.perform(post("/products")
+        mockMvc.perform(post("/products/admin/createProduct")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(productDto)))
+                        .content(JsonUtils.asJsonString(productDto)))
                 .andExpect(status().isConflict());
 
         verifyNoInteractions(productService);
     }
+
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Vendor Not Found")
@@ -138,7 +151,7 @@ class ProductControllerTest {
 
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(productDto)))
+                        .content(JsonUtils.asJsonString(productDto)))
                 .andExpect(status().isNotFound());
 
         verifyNoInteractions(productService);
@@ -167,6 +180,7 @@ class ProductControllerTest {
     @Test
     void addPhoto() {
     }
+
     private ProductDto createValidProductDto() {
         ProductDto productDto = new ProductDto();
         productDto.setName(PRODUCT_NAME);
@@ -176,14 +190,4 @@ class ProductControllerTest {
         productDto.setVendorId(VENDOR_ID);
         return productDto;
     }
-
-    private String asJsonString(Object obj) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 }

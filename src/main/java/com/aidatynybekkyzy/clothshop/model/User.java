@@ -23,6 +23,11 @@ import java.util.Set;
 @NoArgsConstructor
 @Table(name = "users")
 public class User extends AbstractEntity<Long> implements UserDetails {
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO, generator="users_seq_gen")
+    @SequenceGenerator(name="users_seq_gen", sequenceName="users_sequence", allocationSize = 1)
+    @Column(nullable = false, updatable = false, unique = true)
+    private Long id;
     @Column(length = 100, nullable = false)
     private String username;
 

@@ -1,5 +1,6 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
+import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.CategoryDto;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.exception.CategoryAlreadyExistsException;
@@ -7,7 +8,6 @@ import com.aidatynybekkyzy.clothshop.exception.CategoryNotFoundException;
 import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
 import com.aidatynybekkyzy.clothshop.service.impl.CategoryServiceImpl;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -83,7 +83,7 @@ class CategoryControllerTest {
 
         mockMvc.perform(post("/categories")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(createdMockCategory)))
+                .content(JsonUtils.asJsonString(createdMockCategory)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.categoryName", is("Test category name ")));
@@ -100,7 +100,7 @@ class CategoryControllerTest {
 
         mockMvc.perform(post("/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(invalidCategory)))
+                        .content(JsonUtils.asJsonString(invalidCategory)))
                 .andExpect(status().isBadRequest());
 
         verify(categoryService, times(1)).createCategory(any(CategoryDto.class));
@@ -116,7 +116,7 @@ class CategoryControllerTest {
 
         mockMvc.perform(post("/categories")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(existingCategory)))
+                        .content(JsonUtils.asJsonString(existingCategory)))
                 .andExpect(status().isConflict());
 
         verify(categoryService, times(1)).createCategory(any(CategoryDto.class));
@@ -172,7 +172,7 @@ class CategoryControllerTest {
 
         mockMvc.perform(patch("/categories/{id}", ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(mockCategory)))
+                        .content(JsonUtils.asJsonString(mockCategory)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(updatedCategoryDto.getId()))
                 .andExpect(jsonPath("$.categoryName").value(updatedCategoryDto.getCategoryName()));
@@ -192,7 +192,7 @@ class CategoryControllerTest {
 
         mockMvc.perform(patch("/categories/{id}", categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(updatedCategoryDto)))
+                        .content(JsonUtils.asJsonString(updatedCategoryDto)))
                 .andExpect(status().isBadRequest());
 
         verify(categoryService, times(1)).updateCategory(eq(categoryId), any(CategoryDto.class));
@@ -242,13 +242,4 @@ class CategoryControllerTest {
 
     }
 
-    // Вспомогательный метод для преобразования объекта в формат JSON
-    private String asJsonString(Object obj) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

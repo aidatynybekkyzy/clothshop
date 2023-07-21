@@ -18,6 +18,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -61,7 +62,7 @@ public class OrderServiceImpl implements OrderService {
             throw new InvalidArgumentException("Product name is required! ");
         }
         Set<Product> products = order.getItems();
-        Product product =  productRepository.save(productMapper.toEntity(productDto));
+        Product product = productRepository.save(productMapper.toEntity(productDto));
         products.add(product);
         order.setItems(products);
 
@@ -102,22 +103,34 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Cacheable(value = "orderItemsCache", key = "#orderId")
     public Set<ProductDto> getAllOrderItems(Long orderId) {
+        log.info("Getting all order by id: " + orderId + " items");
         Order order = getOrderByIdIfExists(orderId);
-        return orderMapper.toItemDtoSet(order.getItems());
+        Set<Product> products = order.getItems();
+        Set<ProductDto> productDtos = new HashSet<>();
+        for (Product product : products) {
+            ProductDto productDto = orderMapper.toItemDto(product);
+            productDtos.add(productDto);
+        }
+        log.info("Set of all items:" + productDtos);
+        return productDtos;
     }
 
     @Override
     @CacheEvict(value = "orderItemsCache", key = "#orderId + '-' + #itemId")
     public void deleteItemOrder(Long orderId, Long itemId) {
+        log.info("Deleting order by id: " + orderId);
+
         Order order = getOrderByIdIfExists(orderId);
         Product item = order.getItems()
                 .stream()
                 .filter(product -> product.getId().equals(itemId))
                 .findFirst()
                 .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + itemId));
-        log.info("Deleting itemOrder SERVICE ");
+
         order.getItems().remove(item);
         orderRepository.save(order);
+
+        log.info("Order deleted successfully");
     }
 
     @Override
