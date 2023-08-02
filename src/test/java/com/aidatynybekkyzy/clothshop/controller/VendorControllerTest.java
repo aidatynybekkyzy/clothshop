@@ -5,14 +5,12 @@ import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.VendorDto;
 import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
-import com.aidatynybekkyzy.clothshop.repository.VendorRepository;
 import com.aidatynybekkyzy.clothshop.service.impl.VendorServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -40,7 +38,7 @@ class VendorControllerTest {
     @InjectMocks
     private VendorController vendorController;
     private final static long ID = 1L;
-    private final static String VENDOR_NAME = "Test vendor name ";
+    private final static String VENDOR_NAME = "Test vendor name";
 
     final VendorDto vendorDto = VendorDto.builder()
             .id(ID)
@@ -50,8 +48,6 @@ class VendorControllerTest {
             new ProductDto(1L, "Product 1", new BigDecimal(150), 4),
             new ProductDto(2L, "Product 2", new BigDecimal(200), 5)
     );
-    @Autowired
-    private VendorRepository vendorRepository;
 
     @BeforeEach
     void setUp() {
@@ -87,7 +83,7 @@ class VendorControllerTest {
 
         when(vendorService.createVendor(any(VendorDto.class))).thenReturn(vendorDto);
 
-        mockMvc.perform(post("/vendors")
+        mockMvc.perform(post("/vendors/admin/createVendor")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(vendorDto)))
                 .andExpect(status().isCreated())
@@ -105,7 +101,7 @@ class VendorControllerTest {
                 .build();
         when(vendorService.updateVendor(eq(ID), any(VendorDto.class))).thenReturn(updatedVendor);
 
-        mockMvc.perform(patch("/vendors/{id}", ID)
+        mockMvc.perform(patch("/vendors/admin/{id}", ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(vendorDto)))
                 .andExpect(status().isOk())
@@ -129,7 +125,7 @@ class VendorControllerTest {
     @Test
     void deleteVendorById() throws Exception {
         Long id = 1L;
-        mockMvc.perform(delete("/vendors/{id}", id))
+        mockMvc.perform(delete("/vendors/admin/{id}", id))
                 .andExpect(status().isOk())
                 .andDo(print());
         verify(vendorService, times(1)).deleteVendorById(id);
@@ -152,7 +148,7 @@ class VendorControllerTest {
 
         when(vendorService.addProductToVendor(eq(vendorId),any(ProductDto.class))).thenReturn(updatedVendor);
 
-        mockMvc.perform(post("/vendors/{id}/products", vendorId)
+        mockMvc.perform(post("/vendors/admin/{id}/products", vendorId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtils.asJsonString(productDto)))
                 .andExpect(status().isOk())
@@ -162,7 +158,7 @@ class VendorControllerTest {
 
     @Test
     void getVendorProducts_success() throws Exception {
-        Long vendorId = 1L;
+        long vendorId = 1L;
         when(vendorService.getVendorProducts(vendorId)).thenReturn(products);
 
         mockMvc.perform(get("/vendors/{vendorId}/products", vendorId))

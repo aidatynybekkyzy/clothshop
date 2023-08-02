@@ -1,7 +1,9 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
+import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.exception.ProductAlreadyExistsException;
+import com.aidatynybekkyzy.clothshop.exception.VendorNotFoundException;
 import com.aidatynybekkyzy.clothshop.service.ProductService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -9,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,8 +31,14 @@ public class ProductController {
     @PostMapping("/admin/createProduct")
     @ApiOperation("Creating new product")
     public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) throws ProductAlreadyExistsException {
-        ProductDto createdProduct = productService.createProduct(productDto);
-        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+        try {
+            ProductDto createdProduct = productService.createProduct(productDto);
+             return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+        } catch (ProductAlreadyExistsException | InvalidArgumentException productAlreadyExistsException){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (VendorNotFoundException vendorNotFoundException){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/{id}")

@@ -17,6 +17,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,7 +37,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @CacheEvict(value = "productsCache", allEntries = true)
     public ProductDto createProduct(ProductDto productDto) throws ProductAlreadyExistsException {
-        if (productDto.getName() == null || productDto.getName().isEmpty()) {
+        if (Objects.equals(productDto.getName(), "") || productDto.getName().isEmpty()) {
             throw new InvalidArgumentException("Product name is required ");
         }
         if (productRepository.existsByName(productDto.getName())) {

@@ -15,7 +15,7 @@ public interface OrderMapper {
     @Mapping(source = "id", target = "id")
     OrderDto toDto(Order order);
 
-    @Mapping(source = "id", target = "id")
+    @Mapping(source = "shipDate", target = "shipDate")
     Order toEntity(OrderDto orderDto);
 
     List<OrderDto> toDtoList(List<Order> order);

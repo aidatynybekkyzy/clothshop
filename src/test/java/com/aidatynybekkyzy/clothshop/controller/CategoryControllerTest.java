@@ -81,7 +81,7 @@ class CategoryControllerTest {
                 .build();
         when(categoryService.createCategory(any(CategoryDto.class))).thenReturn(createdMockCategory);
 
-        mockMvc.perform(post("/categories")
+        mockMvc.perform(post("/categories/admin/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtils.asJsonString(createdMockCategory)))
                 .andExpect(status().isCreated())
@@ -98,7 +98,7 @@ class CategoryControllerTest {
 
         when(categoryService.createCategory(any(CategoryDto.class))).thenThrow(InvalidArgumentException.class);
 
-        mockMvc.perform(post("/categories")
+        mockMvc.perform(post("/categories/admin/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(invalidCategory)))
                 .andExpect(status().isBadRequest());
@@ -114,7 +114,7 @@ class CategoryControllerTest {
 
         when(categoryService.createCategory(any(CategoryDto.class))).thenThrow(CategoryAlreadyExistsException.class);
 
-        mockMvc.perform(post("/categories")
+        mockMvc.perform(post("/categories/admin/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(existingCategory)))
                 .andExpect(status().isConflict());
@@ -170,13 +170,12 @@ class CategoryControllerTest {
                 .build();
         when(categoryService.updateCategory(eq(ID), any(CategoryDto.class))).thenReturn(updatedCategoryDto);
 
-        mockMvc.perform(patch("/categories/{id}", ID)
+        mockMvc.perform(patch("/categories/admin/{id}", ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(mockCategory)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(updatedCategoryDto.getId()))
                 .andExpect(jsonPath("$.categoryName").value(updatedCategoryDto.getCategoryName()));
-
     }
     @Test
     @DisplayName("Update Category - Error: Invalid Argument")
@@ -190,7 +189,7 @@ class CategoryControllerTest {
         when(categoryService.updateCategory(eq(categoryId), any(CategoryDto.class)))
                 .thenThrow(InvalidArgumentException.class);
 
-        mockMvc.perform(patch("/categories/{id}", categoryId)
+        mockMvc.perform(patch("/categories/admin/{id}", categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(updatedCategoryDto)))
                 .andExpect(status().isBadRequest());
@@ -203,7 +202,7 @@ class CategoryControllerTest {
     @DisplayName("Delete Category by Id ")
     void deleteCategory_success() throws Exception {
         Long id = 1L;
-        mockMvc.perform(delete("/categories/{id}", id))
+        mockMvc.perform(delete("/categories/admin/{id}", id))
                 .andExpect(status().isNoContent())
                 .andDo(print());
         verify(categoryService, times(1)).deleteCategory(id);
@@ -215,7 +214,7 @@ class CategoryControllerTest {
         doThrow(CategoryNotFoundException.class)
                 .when(categoryService).deleteCategory(categoryId);
 
-        mockMvc.perform(delete("/categories/{id}", categoryId))
+        mockMvc.perform(delete("/categories/admin/{id}", categoryId))
                 .andExpect(status().isNotFound());
 
         verify(categoryService, times(1)).deleteCategory(categoryId);

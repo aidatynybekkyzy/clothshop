@@ -40,13 +40,7 @@ class UserControllerTest {
     UserServiceImpl userService;
     MockMvc mockMvc;
     private final static long ID = 1L;
-    final VendorDto vendorDto = VendorDto.builder()
-            .id(ID)
-            .vendorName("Test vendor name")
-            .build();
-    final CategoryDto shoes = CategoryDto.builder()
-            .id(ID)
-            .categoryName("Category 1").build();
+
     final ProductDto product1 = ProductDto.builder()
             .id(ID)
             .name("Adidas")
@@ -144,7 +138,7 @@ class UserControllerTest {
     void getAllUsers() throws Exception {
         when(userService.getAllUsers()).thenReturn(users);
 
-        mockMvc.perform(get("/users"))
+        mockMvc.perform(get("/users/admin/getUsers"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id", is(1)))
@@ -196,7 +190,7 @@ class UserControllerTest {
     @Test
     void deleteUser() throws Exception {
         Long id = 1L;
-        mockMvc.perform(delete("/users/{id}", id))
+        mockMvc.perform(delete("/users/admin/{id}", id))
                 .andExpect(status().isNoContent())
                 .andDo(print());
         verify(userService, times(1)).deleteUser(id);
