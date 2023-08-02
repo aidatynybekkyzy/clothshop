@@ -35,12 +35,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @CacheEvict(value = "productsCache", allEntries = true)
+    @CacheEvict(value = "productsCache", allEntries = true, key = "#name")
     public ProductDto createProduct(ProductDto productDto) throws ProductAlreadyExistsException {
+        log.info("Saving new Product: " + productDto);
         if (Objects.equals(productDto.getName(), "") || productDto.getName().isEmpty()) {
+            log.error("Product name is empty or null " + productDto + "error: " + InvalidArgumentException.class.getName());
             throw new InvalidArgumentException("Product name is required ");
         }
         if (productRepository.existsByName(productDto.getName())) {
+            log.error("Product with name: " + productDto.getName() + " already exists. Error: " + ProductAlreadyExistsException.class);
             throw new ProductAlreadyExistsException("Product with this name already exists " + productDto.getName());
         }
         Vendor vendor = vendorRepository.findById(productDto.getVendorId())
@@ -54,6 +57,7 @@ public class ProductServiceImpl implements ProductService {
                 .vendorId(vendor.getId())
                 .build();
         productRepository.save(product);
+        log.info("New Product saved: " + product);
         return productMapper.toDto(product);
     }
 
@@ -77,9 +81,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @CacheEvict(value = "productsCache", key = "#id")
     public ProductDto updateProduct(Long id, ProductDto productDTO) {
+        log.info("Product to update: " + productDTO);
         Product existingProduct = productMapper.toEntity(getProductById(id));
 
         if (productDTO.getName() == null || productDTO.getName().isEmpty()) {
+            log.error("Product name is null or empty + " + productDTO.getName());
             throw new InvalidArgumentException(" Product name is required ");
         }
 
@@ -87,6 +93,7 @@ public class ProductServiceImpl implements ProductService {
         updatedProduct.setId(existingProduct.getId());
 
         Product savedProduct = productRepository.save(updatedProduct);
+        log.info("Updated and saved product: " + savedProduct);
         return productMapper.toDto(savedProduct);
     }
 

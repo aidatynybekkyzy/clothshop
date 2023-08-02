@@ -71,6 +71,18 @@ public class User extends AbstractEntity<Long> implements UserDetails {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
         return authorities;
     }
+    public void add(Order order) {
+
+        if(order != null) {
+
+            if(orders == null) {
+                orders = new HashSet<>();
+            }
+
+            orders.add(order);
+            order.setUser(this);
+        }
+    }
     @Override
     public String getPassword() {
         return password;

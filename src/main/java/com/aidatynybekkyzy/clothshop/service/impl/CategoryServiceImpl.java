@@ -10,7 +10,9 @@ import com.aidatynybekkyzy.clothshop.mapper.ProductMapper;
 import com.aidatynybekkyzy.clothshop.model.Category;
 import com.aidatynybekkyzy.clothshop.model.Product;
 import com.aidatynybekkyzy.clothshop.repository.CategoryRepository;
+import com.aidatynybekkyzy.clothshop.security.LogoutService;
 import com.aidatynybekkyzy.clothshop.service.CategoryService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -21,16 +23,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final ProductMapper productMapper;
+    private final LogoutService logoutService;
 
     @Autowired
-    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper, ProductMapper productMapper) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper, ProductMapper productMapper, LogoutService logoutService) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
         this.productMapper = productMapper;
+        this.logoutService = logoutService;
     }
 
     @Override //todo categoryId returns null instead of actualID
@@ -52,7 +57,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    @Cacheable(value = "productsCaсhe", key = "#categoryId")
+    @CacheEvict(value = "productsCaсhe", key = "#categoryId")
     public List<ProductDto> getAllProductsByCategoryId(Long categoryId) {
         Category category = categoryMapper.toEntity(getCategoryById(categoryId));
 
@@ -79,7 +84,9 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Cacheable(value = "categoriesCache", key = "#id")
     public CategoryDto updateCategory(Long id, CategoryDto categoryDto) {
+        log.info("Updating category with id: " + id + " " + categoryDto.toString());
         Category category = categoryMapper.toEntity(getCategoryById(id));
 
         if (categoryDto.getCategoryName() == null || categoryDto.getCategoryName().isEmpty()) {
@@ -92,6 +99,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .collect(Collectors.toList()));*/
 
         Category updatedCategory = categoryRepository.save(category);
+        log.info("updated Category: " + updatedCategory.toString());
         return categoryMapper.toDto(updatedCategory);
     }
 

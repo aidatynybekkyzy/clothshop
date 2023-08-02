@@ -30,8 +30,11 @@ public class AbstractEntity<S extends Serializable> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AbstractEntity<S> that = (AbstractEntity<S>) o;
-        return id.equals(that.id);
+        AbstractEntity <S> that = (AbstractEntity <S>) o;
+        if (id != null && that.id != null){
+            return id.equals(that.id);
+        }
+        return false;
     }
 
     @Override

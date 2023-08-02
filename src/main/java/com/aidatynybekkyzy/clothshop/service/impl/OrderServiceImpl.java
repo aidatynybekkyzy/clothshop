@@ -56,16 +56,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @CacheEvict(value = "ordersCache", allEntries = true)
     public OrderDto addItem(Long orderId, ProductDto productDto) {
+        log.info("Item to add to order: " + productDto.toString());
         Order order = orderMapper.toEntity(getOrderById(orderId));
 
         if (productDto.getName() == null || productDto.getName().isEmpty()) {
             throw new InvalidArgumentException("Product name is required! ");
         }
-        Set<Product> products = order.getItems();
-        Product product = productRepository.save(productMapper.toEntity(productDto));
-        products.add(product);
-        order.setItems(products);
-
+        order.getItems().add(productMapper.toEntity(productDto));
+        log.info("Item added to an order ");
         orderRepository.save(order);
         return orderMapper.toDto(order);
 

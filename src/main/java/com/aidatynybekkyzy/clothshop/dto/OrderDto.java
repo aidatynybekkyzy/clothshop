@@ -20,4 +20,17 @@ public class OrderDto {
     private List<ProductDto> items;
     @JsonIgnore
     private Long userId;
+
+    @Override
+    public String toString() {
+        return "OrderDto{" +
+                "id=" + id +
+                ", shipDate=" + shipDate +
+                ", createdAt=" + createdAt +
+                ", status='" + status + '\'' +
+                ", complete=" + complete +
+                ", items=" + items +
+                ", userId=" + userId +
+                '}';
+    }
 }

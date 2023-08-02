@@ -108,7 +108,7 @@ public class VendorServiceImpl implements VendorService {
     }
 
     @Override
-    @Cacheable(value = "vendorProductsCache", key = "#id")
+    @CacheEvict(value = "vendorProductsCache", key = "#id")
     public List<ProductDto> getVendorProducts(long id) {
         Vendor vendor = vendorMapper.toEntity(getVendorById(id));
         return vendorMapper.toProductDtoList(vendor.getProducts());

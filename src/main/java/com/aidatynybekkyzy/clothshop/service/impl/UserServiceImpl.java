@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
@@ -58,7 +59,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @CacheEvict(value = "usersCache", allEntries = true)
-    public UserDto createUser( @Valid UserDto userDto) throws UserEmailAlreadyExistsException {
+    public UserDto createUser(@Valid UserDto userDto) throws UserEmailAlreadyExistsException {
         validateUniqueEmail(userDto.getEmail());
         User user = userMapper.toEntity(userDto);
         User savedUser = userRepository.save(user);
@@ -95,7 +96,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @CacheEvict(value = "ordersCache", key = "#userId")
+    @Transactional
     public OrderDto createOrderForCustomer(Long userId, OrderDto orderDto) {
+        log.info("Order to create for a user: " + orderDto.toString());
         User user = userMapper.toEntity(getUserById(userId));
 
         Order order = Order.builder()
@@ -115,12 +118,15 @@ public class UserServiceImpl implements UserService {
                     .price(orderItemDto.getPrice())
                     .quantity(orderItemDto.getQuantity())
                     .categoryId(orderItemDto.getCategoryId())
+                    .vendorId(orderItemDto.getVendorId())
                     .build();
             order.getItems().add(orderItem);
+            log.info("OrderItem added to order " + orderItem.toString());
         }
-        user.getOrders().add(order); // Добавляем созданный заказ к списку заказов пользователя
-
+        user.add(order); // Добавляем созданный заказ к списку заказов пользователя
+        log.info("Order added to user's orders list");
         Order savedOrder = orderRepository.save(order);
+        log.info("Saved order -->  " + savedOrder.toString());
         return orderMapper.toDto(savedOrder);
     }
 

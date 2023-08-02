@@ -45,4 +45,16 @@ public class Order extends AbstractEntity<Long> {
             items.add(orderItem);
         }
     }
+
+    @Override
+    public String toString() {
+        return "Order{" +
+                "shipDate=" + shipDate +
+                ", createdAt=" + createdAt +
+                ", status='" + status + '\'' +
+                ", complete=" + complete +
+                ", items=" + items +
+                ", user=" + user +
+                '}';
+    }
 }

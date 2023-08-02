@@ -93,7 +93,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({ProductAlreadyExistsException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Object> handleProductAlreadyExistsException(ProductAlreadyExistsException e, WebRequest request) {
-        log.error("Failed to create/update user " + e);
+        log.error("Failed to create/update product " + e);
         return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
     }
     @ExceptionHandler({ItemNotFoundException.class})

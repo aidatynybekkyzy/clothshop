@@ -50,6 +50,7 @@ public class CategoryController {
     @PatchMapping("/admin/{id}")
     @ApiOperation("Updating category")
     public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
+        log.info("Update category. change: " + categoryDto.toString());
         CategoryDto updatedCategory = categoryService.updateCategory(id, categoryDto);
         return new ResponseEntity<>(updatedCategory, HttpStatus.OK);
     }

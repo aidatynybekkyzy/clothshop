@@ -31,14 +31,8 @@ public class ProductController {
     @PostMapping("/admin/createProduct")
     @ApiOperation("Creating new product")
     public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) throws ProductAlreadyExistsException {
-        try {
             ProductDto createdProduct = productService.createProduct(productDto);
              return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
-        } catch (ProductAlreadyExistsException | InvalidArgumentException productAlreadyExistsException){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (VendorNotFoundException vendorNotFoundException){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
     }
 
     @GetMapping("/{id}")
