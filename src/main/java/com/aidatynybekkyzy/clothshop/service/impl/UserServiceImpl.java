@@ -2,10 +2,10 @@ package com.aidatynybekkyzy.clothshop.service.impl;
 
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
 import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
-import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
 import com.aidatynybekkyzy.clothshop.exception.UserEmailAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.UserNotFoundException;
+import com.aidatynybekkyzy.clothshop.mapper.OrderItemMapper;
 import com.aidatynybekkyzy.clothshop.mapper.OrderMapper;
 import com.aidatynybekkyzy.clothshop.mapper.UserMapper;
 import com.aidatynybekkyzy.clothshop.model.*;
@@ -13,6 +13,7 @@ import com.aidatynybekkyzy.clothshop.repository.OrderRepository;
 import com.aidatynybekkyzy.clothshop.repository.UserRepository;
 import com.aidatynybekkyzy.clothshop.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -33,12 +34,14 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
+    private final OrderItemMapper orderItemMapper;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, OrderRepository orderRepository, OrderMapper orderMapper) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, OrderRepository orderRepository, OrderMapper orderMapper, OrderItemMapper orderItemMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
+        this.orderItemMapper = orderItemMapper;
     }
 
     @Override
@@ -96,29 +99,30 @@ public class UserServiceImpl implements UserService {
     @Override
     @CacheEvict(value = "ordersCache", key = "#userId")
     @Transactional
-    public OrderDto createOrderForCustomer(Long userId, OrderDto orderDto) {
-        log.info("Creating order for a user with id: " + userId + ". Order --> " + orderDto.toString());
-        log.info("adding orderItems into order" + orderDto.getItems().toString());
+    public OrderDto createOrderForCustomer(Long userId, @NotNull OrderDto orderDto) {
         User user = userMapper.toEntity(getUserById(userId));
-        Order order = orderMapper.toEntity(orderDto);
-        order.setUser(user);
+        log.info("creating new order");
+        Order order = Order.builder()
+                .shipDate(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
+                .status(OrderStatus.PLACED.name())
+                .complete(false)
+                .orderItems(new HashSet<>())
+                .user(user)
+                .build();
 
-        Set<OrderItem> orderItems = new HashSet<>();
-
-        for (OrderItemDto orderItemDto : orderDto.getItems()) {
+         Set<OrderItem> items = orderDto.getItems();
+        for (OrderItem orderItem: items) {
             OrderItem item = OrderItem.builder()
-                    .productId(orderItemDto.getProductId())
-                    .order(order)
-                    .quantity(orderItemDto.getQuantity())
-                    .sellingPrice(orderItemDto.getSellingPrice())
+                    .quantity(orderItem.getQuantity())
+                    .sellingPrice(orderItem.getSellingPrice())
+                    .productId(orderItem.getProductId())
                     .build();
-            orderItems.add(item);
+            order.add(item);
         }
-        order.setOrderItems(orderItems);
-        log.info("adding orderItems into order" + orderDto.getItems().toString());
-        user.add(order);
+        user.getOrders().add(order);
+        log.info("OrderItem added to order");
         Order savedOrder = orderRepository.save(order);
-        log.info(order.getOrderItems().toString());
 
         return orderMapper.toDto(savedOrder);
     }

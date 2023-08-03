@@ -22,4 +22,13 @@ public class OrderItemDto {
     @DecimalMin(value = "0.0", inclusive = false)
     @Digits(integer=4, fraction=2)
     private BigDecimal sellingPrice;
+
+    @Override
+    public String toString() {
+        return "OrderItemDto{" +
+                "productId=" + productId +
+                ", quantity=" + quantity +
+                ", sellingPrice=" + sellingPrice +
+                '}';
+    }
 }

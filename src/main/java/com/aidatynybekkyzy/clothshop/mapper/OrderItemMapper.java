@@ -8,6 +8,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface OrderItemMapper {
@@ -17,6 +18,6 @@ public interface OrderItemMapper {
     @Mapping(source = "productId", target = "productId")
     OrderItem toEntity(OrderItemDto orderItemDto);
 
-    List<OrderDto> toDtoList(List<Order> order);
-
+    Set<OrderItemDto> toDtoSet(Set<OrderItem> orderItems);
+    Set<OrderItem> toEntitySet(Set<OrderItemDto> orderItemDtos);
 }
