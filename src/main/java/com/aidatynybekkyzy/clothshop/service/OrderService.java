@@ -1,7 +1,8 @@
 package com.aidatynybekkyzy.clothshop.service;
 
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
-import com.aidatynybekkyzy.clothshop.dto.ProductDto;
+import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
+import com.aidatynybekkyzy.clothshop.model.OrderItem;
 
 import java.util.List;
 import java.util.Set;
@@ -11,17 +12,17 @@ public interface OrderService {
 
     OrderDto getOrderById(Long id);
 
-    OrderDto addItem(Long id, ProductDto productDto);
+    OrderDto addItem(Long id, OrderItemDto orderItemDto);
 
     void cancelOrderById(Long id);
 
     void deleteOrderById(Long id);
 
-    ProductDto getItemOrder(Long oid, Long iid);
+    OrderItem getItemOrder(Long oid, Long iid);
 
-    Set<ProductDto> getAllOrderItems(Long oid);
+    Set<OrderItem> getAllOrderItems(Long oid);
 
-    void deleteItemOrder(Long oid, Long iid);
+    void deleteOrderItem(Long oid, Long iid);
 
     void purchaseOrder(Long id);
 

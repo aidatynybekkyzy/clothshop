@@ -1,36 +1,16 @@
 package com.aidatynybekkyzy.clothshop.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import javax.validation.constraints.NotNull;
+import java.util.Set;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class OrderDto {
-    private Long id;
-    private LocalDateTime shipDate;
-    private LocalDateTime createdAt;
-    private String status;
-    private Boolean complete;
-    private List<ProductDto> items;
-    @JsonIgnore
-    private Long userId;
-
-    @Override
-    public String toString() {
-        return "OrderDto{" +
-                "id=" + id +
-                ", shipDate=" + shipDate +
-                ", createdAt=" + createdAt +
-                ", status='" + status + '\'' +
-                ", complete=" + complete +
-                ", items=" + items +
-                ", userId=" + userId +
-                '}';
-    }
+    @NotNull
+    private Set<OrderItemDto> items;
 }

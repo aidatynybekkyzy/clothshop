@@ -1,7 +1,8 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
-import com.aidatynybekkyzy.clothshop.dto.ProductDto;
+import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
+import com.aidatynybekkyzy.clothshop.model.OrderItem;
 import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;
 import com.aidatynybekkyzy.clothshop.service.OrderService;
 import io.swagger.annotations.ApiOperation;
@@ -39,8 +40,8 @@ public class OrderController {
     @PostMapping("/{orderId}/items")
     @PreAuthorize("hasRole('ADMIN') or isAutheticated()")
     @ApiOperation("Adding item to an order")
-    public ResponseEntity<OrderDto> addItemToOrder(@PathVariable Long orderId, @RequestBody ProductDto productDto) {
-        OrderDto orderDto = orderService.addItem(orderId, productDto);
+    public ResponseEntity<OrderDto> addItemToOrder(@PathVariable Long orderId, @RequestBody OrderItemDto orderItemDto) {
+        OrderDto orderDto = orderService.addItem(orderId, orderItemDto);
         return new ResponseEntity<>(orderDto, HttpStatus.OK);
     }
 
@@ -63,16 +64,16 @@ public class OrderController {
     @GetMapping("/{orderId}/items/{itemId}")
     @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     @ApiOperation("Getting the orderItem by orderId and itemId")
-    public ResponseEntity<ProductDto> getOrderItem(@PathVariable Long orderId, @PathVariable Long itemId) {
-        ProductDto orderItemDto = orderService.getItemOrder(orderId, itemId);
+    public ResponseEntity<OrderItem> getOrderItem(@PathVariable Long orderId, @PathVariable Long itemId) {
+        OrderItem orderItemDto = orderService.getItemOrder(orderId, itemId);
         return new ResponseEntity<>(orderItemDto, HttpStatus.OK);
     }
 
     @GetMapping("/{orderId}/items")
     @PreAuthorize("hasRole('ADMIN')or isAuthenticated()")
     @ApiOperation("Getting set of orderItems by orderId")
-    public ResponseEntity<Set<ProductDto>> getOrderItems(@PathVariable Long orderId) {
-        Set<ProductDto> orderItemDtos = orderService.getAllOrderItems(orderId);
+    public ResponseEntity<Set<OrderItem>> getOrderItems(@PathVariable Long orderId) {
+        Set<OrderItem> orderItemDtos = orderService.getAllOrderItems(orderId);
         return new ResponseEntity<>(orderItemDtos, HttpStatus.OK);
     }
 
@@ -80,7 +81,7 @@ public class OrderController {
     @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     @ApiOperation("Deleting orderItem by orderId and itemId")
     public ResponseEntity<ApiResponse> deleteOrderItem(@PathVariable Long orderId, @PathVariable Long itemId) {
-        orderService.deleteItemOrder(orderId, itemId);
+        orderService.deleteOrderItem(orderId, itemId);
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(HttpStatus.NO_CONTENT.value(), " Order Item deleted successfully"));
     }
 

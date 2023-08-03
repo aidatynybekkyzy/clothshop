@@ -1,16 +1,14 @@
 package com.aidatynybekkyzy.clothshop.service.impl;
 
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
+import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
 import com.aidatynybekkyzy.clothshop.exception.UserEmailAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.UserNotFoundException;
 import com.aidatynybekkyzy.clothshop.mapper.OrderMapper;
 import com.aidatynybekkyzy.clothshop.mapper.UserMapper;
-import com.aidatynybekkyzy.clothshop.model.Order;
-import com.aidatynybekkyzy.clothshop.model.OrderStatus;
-import com.aidatynybekkyzy.clothshop.model.Product;
-import com.aidatynybekkyzy.clothshop.model.User;
+import com.aidatynybekkyzy.clothshop.model.*;
 import com.aidatynybekkyzy.clothshop.repository.OrderRepository;
 import com.aidatynybekkyzy.clothshop.repository.UserRepository;
 import com.aidatynybekkyzy.clothshop.service.UserService;
@@ -25,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -98,35 +97,29 @@ public class UserServiceImpl implements UserService {
     @CacheEvict(value = "ordersCache", key = "#userId")
     @Transactional
     public OrderDto createOrderForCustomer(Long userId, OrderDto orderDto) {
-        log.info("Order to create for a user: " + orderDto.toString());
+        log.info("Creating order for a user with id: " + userId + ". Order --> " + orderDto.toString());
+        log.info("adding orderItems into order" + orderDto.getItems().toString());
         User user = userMapper.toEntity(getUserById(userId));
+        Order order = orderMapper.toEntity(orderDto);
+        order.setUser(user);
 
-        Order order = Order.builder()
-                .shipDate(LocalDateTime.now())
-                .createdAt(LocalDateTime.now())
-                .status(OrderStatus.PLACED.name())
-                .complete(false)
-                .items(new HashSet<>())
-                .user(user)
-                .build();
+        Set<OrderItem> orderItems = new HashSet<>();
 
-        List<ProductDto> orderItems = orderDto.getItems();
-
-        for (ProductDto orderItemDto : orderItems) {
-            Product orderItem = Product.builder()
-                    .name(orderItemDto.getName())
-                    .price(orderItemDto.getPrice())
+        for (OrderItemDto orderItemDto : orderDto.getItems()) {
+            OrderItem item = OrderItem.builder()
+                    .productId(orderItemDto.getProductId())
+                    .order(order)
                     .quantity(orderItemDto.getQuantity())
-                    .categoryId(orderItemDto.getCategoryId())
-                    .vendorId(orderItemDto.getVendorId())
+                    .sellingPrice(orderItemDto.getSellingPrice())
                     .build();
-            order.getItems().add(orderItem);
-            log.info("OrderItem added to order " + orderItem.toString());
+            orderItems.add(item);
         }
-        user.add(order); // Добавляем созданный заказ к списку заказов пользователя
-        log.info("Order added to user's orders list");
+        order.setOrderItems(orderItems);
+        log.info("adding orderItems into order" + orderDto.getItems().toString());
+        user.add(order);
         Order savedOrder = orderRepository.save(order);
-        log.info("Saved order -->  " + savedOrder.toString());
+        log.info(order.getOrderItems().toString());
+
         return orderMapper.toDto(savedOrder);
     }
 

@@ -95,15 +95,23 @@ public class DataLoader implements CommandLineRunner {
         userRepository.save(user);
 
         Order order = new Order();
-        order.setId(1L);
+        order.setOrderId(1L);
         order.setShipDate(LocalDateTime.now());
         order.setCreatedAt(LocalDateTime.now());
         order.setStatus(OrderStatus.PLACED.name());
         order.setComplete(true);
-        order.setItems(Set.of(product));
         order.setUser(user);
         orderRepository.save(order);
 
+        OrderItem item1 = OrderItem.builder()
+                .id(1L)
+                .productId(1L)
+                .quantity(12)
+                .sellingPrice(new BigDecimal(1500))
+                .order(order)
+                .build();
+
+        order.setOrderItems(Set.of(item1));
         user.setOrders(Set.of(order));
         userRepository.save(user);
 
