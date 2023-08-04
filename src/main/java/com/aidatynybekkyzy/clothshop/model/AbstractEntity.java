@@ -36,9 +36,4 @@ public class AbstractEntity<S extends Serializable> {
         }
         return false;
     }
-
-    @Override
-    public String toString() {
-        return this.getClass() + "[id = " + id + " ]";
-    }
 }

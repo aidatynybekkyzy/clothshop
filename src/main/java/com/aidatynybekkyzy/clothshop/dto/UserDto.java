@@ -15,6 +15,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class UserDto {
+    @NotNull
     private Long id;
     @NotNull
     private String username;
@@ -35,6 +36,6 @@ public class UserDto {
     @NotNull
     @Size(max = 20)
     private String phone;
-    private Set<OrderDto> orders = new HashSet<>();
+    private Set<OrderDto> orders;
 
 }

@@ -4,6 +4,7 @@ import com.aidatynybekkyzy.clothshop.security.jwt.JWTAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -36,11 +37,16 @@ public class SecurityConfig {
                 .disable()
                 .authorizeRequests()
                 .antMatchers(AUTH_END_POINT).permitAll()
-                /*.antMatchers(VENDOR_ADMIN).hasAuthority(ADMIN)
+                .antMatchers(HttpMethod.GET, "/vendors/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/categories/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/products/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/users/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/orders/**").permitAll()
                 .antMatchers(PRODUCT_ADMIN).hasAuthority(ADMIN)
+                .antMatchers(VENDOR_ADMIN).hasAuthority(ADMIN)
                 .antMatchers(USER_ADMIN).hasAuthority(ADMIN)
                 .antMatchers(CATEGORY_ADMIN).hasAuthority(ADMIN)
-                .antMatchers(ORDER_ADMIN).hasAuthority(ADMIN)*/
+                .antMatchers(ORDER_ADMIN).hasAuthority(ADMIN)
                 .anyRequest()
                 .authenticated()
                 .and()

@@ -53,7 +53,7 @@ public class User extends AbstractEntity<Long> implements UserDetails {
     @Column(name = "phone", length = 20, nullable = false, unique = true)
     private String phone;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user") //fetch = FetchType.LAZY - при вызове orders не будет загружаться
     private Set<Order> orders = new HashSet<>();
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),

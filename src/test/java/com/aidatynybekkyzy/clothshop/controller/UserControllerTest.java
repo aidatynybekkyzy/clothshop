@@ -3,6 +3,8 @@ package com.aidatynybekkyzy.clothshop.controller;
 import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.*;
 import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
+import com.aidatynybekkyzy.clothshop.model.Order;
+import com.aidatynybekkyzy.clothshop.model.OrderItem;
 import com.aidatynybekkyzy.clothshop.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,14 +59,27 @@ class UserControllerTest {
             .categoryId(1L)
             .vendorId(1L)
             .build();
+
+    OrderItemDto orderItem1 = OrderItemDto.builder()
+            .productId(1L)
+            .quantity(2)
+            .sellingPrice(new BigDecimal(25))
+            .build();
+    OrderItemDto orderItem2 = OrderItemDto.builder()
+            .productId(2L)
+            .quantity(2)
+            .sellingPrice(new BigDecimal(25))
+            .build();
+
     final OrderDto order1 = OrderDto.builder()
             .id(ID)
-            .items(List.of(product1))
+            .items(Set.of(orderItem1))
             .userId(1L)
             .build();
     final OrderDto order2 = OrderDto.builder()
             .id(2L)
-            .items(List.of(product2))
+            .items(Set.of(orderItem2))
+            .userId(1L)
             .build();
     List<OrderDto> orders = List.of(order1, order2);
     final UserDto user = UserDto.builder()
@@ -205,20 +220,12 @@ class UserControllerTest {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$[0].items[0].id", is(1)))
-                .andExpect(jsonPath("$[0].items[0].name", is("Adidas")))
-                .andExpect(jsonPath("$[0].items[0].price", is(1000)))
-                .andExpect(jsonPath("$[0].items[0].quantity", is(5)))
-                .andExpect(jsonPath("$[0].items[0].categoryId", is(1)))
-                .andExpect(jsonPath("$[0].items[0].vendorId", is(1)))
-                .andExpect(jsonPath("$[1].id", is(2)))
-                .andExpect(jsonPath("$[1].items[0].id", is(2)))
-                .andExpect(jsonPath("$[1].items[0].name", is("Nike")))
-                .andExpect(jsonPath("$[1].items[0].price", is(500)))
-                .andExpect(jsonPath("$[1].items[0].quantity", is(3)))
-                .andExpect(jsonPath("$[1].items[0].categoryId", is(1)))
-                .andExpect(jsonPath("$[1].items[0].vendorId", is(1)));
+                .andExpect(jsonPath("$[0].items[0].quantity", is(2)))
+                .andExpect(jsonPath("$[0].items[0].productId", is(1)))
+                .andExpect(jsonPath("$[0].items[0].sellingPrice", is(25)))
+                .andExpect(jsonPath("$[1].items[0].quantity", is(2)))
+                .andExpect(jsonPath("$[1].items[0].productId", is(2)))
+                .andExpect(jsonPath("$[1].items[0].sellingPrice", is(25)));
 
         verify(userService, times(1)).getUserOrders(userId);
     }
@@ -228,8 +235,7 @@ class UserControllerTest {
         Long userId = 1L;
 
         OrderDto createdOrder = OrderDto.builder()
-                .id(1L)
-                .items(List.of(product1))
+                .items(Set.of(orderItem1))
                 .userId(userId)
                 .build();
 
@@ -241,12 +247,8 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.items", hasSize(1)))
-                .andExpect(jsonPath("$.items[0].id", is(1)))
-                .andExpect(jsonPath("$.items[0].name", is("Adidas")))
-                .andExpect(jsonPath("$.items[0].price", is(1000)))
-                .andExpect(jsonPath("$.items[0].quantity", is(5)))
-                .andExpect(jsonPath("$.items[0].categoryId", is(1)))
-                .andExpect(jsonPath("$.items[0].vendorId", is(1)));
+                .andExpect(jsonPath("$.items[0].id", is(1)));
+
               //  .andExpect(jsonPath("$.userId", is(userId.intValue())));
 
         verify(userService, times(1)).createOrderForCustomer(eq(userId), any(OrderDto.class));

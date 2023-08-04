@@ -45,14 +45,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Cacheable(value = "usersCache")
     public List<UserDto> getAllUsers() {
         List<User> users = userRepository.findAll();
         return userMapper.toDtoList(users);
     }
 
     @Override
-    @Cacheable(value = "usersCache", key = "#id")
+    @Transactional
     public UserDto getUserById(Long id) {
         log.info("SERVICE  Get user by id");
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
@@ -60,7 +59,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @CacheEvict(value = "usersCache", allEntries = true)
+    @Transactional
     public UserDto createUser(@Valid UserDto userDto) throws UserEmailAlreadyExistsException {
         validateUniqueEmail(userDto.getEmail());
         User user = userMapper.toEntity(userDto);
@@ -69,7 +68,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @CacheEvict(value = "usersCache", key = "#id")
+    @Transactional
     public UserDto updateUser(Long id, UserDto userDto) throws UserEmailAlreadyExistsException {
         User existingUser = userMapper.toEntity(getUserById(id));
 
@@ -81,14 +80,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @CacheEvict(value = "usersCache", key = "#id")
+    @Transactional
     public void deleteUser(Long id) {
         User user = userMapper.toEntity(getUserById(id));
         userRepository.delete(user);
     }
 
     @Override
-    @Cacheable(value = "ordersCache", key = "#userId")
+    @Transactional
     public List<OrderDto> getUserOrders(Long userId) {
         User user = userMapper.toEntity(getUserById(userId));
         List<Order> orders = orderRepository.findByUser(user);
@@ -97,12 +96,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @CacheEvict(value = "ordersCache", key = "#userId")
     @Transactional
     public OrderDto createOrderForCustomer(Long userId, @NotNull OrderDto orderDto) {
         User user = userMapper.toEntity(getUserById(userId));
         log.info("creating new order");
         Order order = Order.builder()
+                .orderId(orderDto.getId())
                 .shipDate(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .status(OrderStatus.PLACED.name())
@@ -111,16 +110,17 @@ public class UserServiceImpl implements UserService {
                 .user(user)
                 .build();
 
-         Set<OrderItem> items = orderDto.getItems();
-        for (OrderItem orderItem: items) {
+        Set<OrderItemDto> items = orderDto.getItems();
+        for (OrderItemDto orderItem: items) {
             OrderItem item = OrderItem.builder()
+                    .id(orderItem.getId())
                     .quantity(orderItem.getQuantity())
                     .sellingPrice(orderItem.getSellingPrice())
                     .productId(orderItem.getProductId())
                     .build();
             order.add(item);
         }
-        user.getOrders().add(order);
+        user.add(order);
         log.info("OrderItem added to order");
         Order savedOrder = orderRepository.save(order);
 

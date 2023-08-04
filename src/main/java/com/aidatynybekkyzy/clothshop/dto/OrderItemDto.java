@@ -1,7 +1,9 @@
 package com.aidatynybekkyzy.clothshop.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Digits;
@@ -10,7 +12,10 @@ import java.math.BigDecimal;
 
 @Data
 @AllArgsConstructor
+@Builder @NoArgsConstructor
 public class OrderItemDto {
+    @NotNull
+    private Long id;
 
     @NotNull
     private Long productId;

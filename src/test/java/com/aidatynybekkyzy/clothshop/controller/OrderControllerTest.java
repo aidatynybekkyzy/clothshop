@@ -1,6 +1,7 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
+import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
 import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -55,14 +58,25 @@ class OrderControllerTest {
             .vendorId(1L)
             .build();
     Set<ProductDto> productDtos = Set.of(product1, product2);
+    OrderItemDto orderItem1 = OrderItemDto.builder()
+            .productId(1L)
+            .quantity(2)
+            .sellingPrice(new BigDecimal("25.00"))
+            .build();
+    OrderItemDto orderItem2 = OrderItemDto.builder()
+            .productId(2L)
+            .quantity(2)
+            .sellingPrice(new BigDecimal("25.00"))
+            .build();
     final OrderDto order1 = OrderDto.builder()
             .id(ID)
-            .items(List.of(product1))
+            .items(Set.of(orderItem1, orderItem2))
             .userId(1L)
             .build();
     final OrderDto order2 = OrderDto.builder()
             .id(2L)
-            .items(List.of(product2))
+            .items(Set.of(orderItem1, orderItem2))
+            .userId(1L)
             .build();
     List<OrderDto> orders = List.of(order1, order2);
     final UserDto user = UserDto.builder()

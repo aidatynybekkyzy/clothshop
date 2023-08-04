@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
@@ -23,9 +24,10 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @Builder
+@Slf4j
 public class Order {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @NotNull
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long orderId;
     @CreationTimestamp
     private LocalDateTime shipDate;
@@ -60,26 +62,19 @@ public class Order {
 
     public void add(OrderItem orderItem) {
         if (orderItem != null) {
+            orderItem.setOrder(this);
             if (orderItems == null) {
                 orderItems = new HashSet<>();
             }
             orderItems.add(orderItem);
-            orderItem.setOrder(this);
-
         }
     }
 
-    public boolean remove(Long orderItemId) {
-
+    public void remove(Long orderItemId) {
+        log.info(String.format("Removing orderItem with id '%s'", orderItemId));
         if (orderItems != null) {
-
-            for (OrderItem oi : orderItems) {
-                if (Objects.equals(oi.getId(), orderItemId))
-                    return orderItems.remove(oi);
-            }
+            orderItems.removeIf(orderItem -> orderItem.getId().equals(orderItemId));
         }
-
-        return false;
     }
 
     public BigDecimal getTotalPrice() {

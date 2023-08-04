@@ -17,7 +17,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
-    private final OrderService  orderService;
+    private final OrderService orderService;
 
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
@@ -38,7 +38,7 @@ public class OrderController {
     }
 
     @PostMapping("/{orderId}/items")
-    @PreAuthorize("hasRole('ADMIN') or isAutheticated()")
+    @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     @ApiOperation("Adding item to an order")
     public ResponseEntity<OrderDto> addItemToOrder(@PathVariable Long orderId, @RequestBody OrderItemDto orderItemDto) {
         OrderDto orderDto = orderService.addItem(orderId, orderItemDto);
