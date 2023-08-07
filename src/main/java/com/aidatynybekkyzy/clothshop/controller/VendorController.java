@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -33,14 +34,14 @@ public class VendorController {
 
     @PostMapping("/admin/createVendor")
     @ApiOperation("Creating new vendor")
-    public ResponseEntity<VendorDto> createVendor(@RequestBody VendorDto vendorDto) {
+    public ResponseEntity<VendorDto> createVendor(@RequestBody @Valid VendorDto vendorDto) {
         VendorDto createdVendor = vendorService.createVendor(vendorDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdVendor);
     }
 
     @PatchMapping("/admin/{id}")
     @ApiOperation("Updating the vendor")
-    public ResponseEntity<VendorDto> updateVendor(@PathVariable Long id, @RequestBody VendorDto vendorDto) {
+    public ResponseEntity<VendorDto> updateVendor(@PathVariable Long id, @RequestBody @Valid VendorDto vendorDto) {
         VendorDto updatedVendor = vendorService.updateVendor(id, vendorDto);
         return ResponseEntity.ok(updatedVendor);
 
@@ -65,7 +66,7 @@ public class VendorController {
 
     @PostMapping("/admin/{id}/products")
     @ApiOperation("Adding product to a vendor")
-    public ResponseEntity<VendorDto> addProductToVendor(@PathVariable long id, @RequestBody ProductDto productDto) throws ProductAlreadyExistsException {
+    public ResponseEntity<VendorDto> addProductToVendor(@PathVariable long id, @RequestBody @Valid ProductDto productDto) throws ProductAlreadyExistsException {
         VendorDto updatedVendor = vendorService.addProductToVendor(id, productDto);
         return ResponseEntity.ok(updatedVendor);
     }

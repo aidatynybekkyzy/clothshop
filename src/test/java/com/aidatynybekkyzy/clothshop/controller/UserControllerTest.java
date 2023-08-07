@@ -118,7 +118,7 @@ class UserControllerTest {
     void createUser() throws Exception {
         when(userService.createUser(any(UserDto.class))).thenReturn(user);
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post("/users/admin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(user)))
                 .andExpect(status().isCreated())

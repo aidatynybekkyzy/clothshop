@@ -13,8 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 
 @RestController
@@ -29,7 +31,7 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation("Register new user")
     public ResponseEntity<UserDto> register(
-            @RequestBody UserDto registerDto) throws PasswordIncorrectException {
+            @RequestBody @Valid UserDto registerDto) throws PasswordIncorrectException {
         log.info("Doing registration of user " + registerDto.getEmail());
         return ResponseEntity.ok(authenticationService.register(registerDto));
     }
@@ -37,7 +39,7 @@ public class AuthController {
     @PostMapping("/login")
     @ApiOperation("Login user")
     public ResponseEntity<AuthenticationResponseDto> authenticate(
-            @RequestBody AuthenticationRequestDto authenticationRequestDto) {
+            @RequestBody @Valid  AuthenticationRequestDto authenticationRequestDto) {
         log.info("Doing authentication of user " + authenticationRequestDto.getEmail());
         return ResponseEntity.ok(authenticationService.authenticate(authenticationRequestDto));
     }

@@ -1,9 +1,7 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
-import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.exception.ProductAlreadyExistsException;
-import com.aidatynybekkyzy.clothshop.exception.VendorNotFoundException;
 import com.aidatynybekkyzy.clothshop.service.ProductService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -14,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 
@@ -30,7 +29,7 @@ public class ProductController {
 
     @PostMapping("/admin/createProduct")
     @ApiOperation("Creating new product")
-    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) throws ProductAlreadyExistsException {
+    public ResponseEntity<ProductDto> createProduct(@RequestBody @Valid ProductDto productDto) throws ProductAlreadyExistsException {
             ProductDto createdProduct = productService.createProduct(productDto);
              return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }
@@ -52,7 +51,7 @@ public class ProductController {
 
     @PatchMapping("/admin/{id}")
     @ApiOperation("Updating the product")
-    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto productDto) {
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody @Valid ProductDto productDto) {
         ProductDto updatedProduct = productService.updateProduct(id, productDto);
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }

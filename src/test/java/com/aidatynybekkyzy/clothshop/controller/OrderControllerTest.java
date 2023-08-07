@@ -1,11 +1,15 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
+import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
 import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
 import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
+import com.aidatynybekkyzy.clothshop.mapper.OrderItemMapper;
+import com.aidatynybekkyzy.clothshop.model.OrderItem;
 import com.aidatynybekkyzy.clothshop.model.OrderStatus;
+import com.aidatynybekkyzy.clothshop.repository.OrderItemRepository;
 import com.aidatynybekkyzy.clothshop.service.impl.OrderServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +42,8 @@ class OrderControllerTest {
     private OrderController orderController;
     @Mock
     private OrderServiceImpl orderService;
+    @InjectMocks
+    private OrderItemMapper orderItemMapper;
     MockMvc mockMvc;
     private final static long ID = 1L;
 
@@ -59,15 +65,20 @@ class OrderControllerTest {
             .build();
     Set<ProductDto> productDtos = Set.of(product1, product2);
     OrderItemDto orderItem1 = OrderItemDto.builder()
+            .id(1L)
             .productId(1L)
             .quantity(2)
             .sellingPrice(new BigDecimal("25.00"))
             .build();
     OrderItemDto orderItem2 = OrderItemDto.builder()
+            .id(2L)
             .productId(2L)
             .quantity(2)
             .sellingPrice(new BigDecimal("25.00"))
             .build();
+    OrderItem orderItem11 = orderItemMapper.toEntity(orderItem1);
+    OrderItem orderItem22 = orderItemMapper.toEntity(orderItem2);
+    Set<OrderItem> orderItems = Set.of(orderItem11,orderItem22);
     final OrderDto order1 = OrderDto.builder()
             .id(ID)
             .items(Set.of(orderItem1, orderItem2))
@@ -119,20 +130,16 @@ class OrderControllerTest {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].items[0].id", is(1)))
-                .andExpect(jsonPath("$[0].items[0].name", is("Adidas")))
-                .andExpect(jsonPath("$[0].items[0].price", is(1000)))
-                .andExpect(jsonPath("$[0].items[0].quantity", is(5)))
-                .andExpect(jsonPath("$[0].items[0].categoryId", is(1)))
-                .andExpect(jsonPath("$[0].items[0].vendorId", is(1)))
-                .andExpect(jsonPath("$[1].id", is(2)))
-                .andExpect(jsonPath("$[1].items[0].id", is(2)))
-                .andExpect(jsonPath("$[1].items[0].name", is("Nike")))
-                .andExpect(jsonPath("$[1].items[0].price", is(500)))
-                .andExpect(jsonPath("$[1].items[0].quantity", is(3)))
-                .andExpect(jsonPath("$[1].items[0].categoryId", is(1)))
-                .andExpect(jsonPath("$[1].items[0].vendorId", is(1)));
-
+                .andExpect(jsonPath("$[0].id", is(1)))
+                .andExpect(jsonPath("$.items[0].id", is(1)))
+                .andExpect(jsonPath("$.items[0].productId", is(2)))
+                .andExpect(jsonPath("$.items[0].quantity", is(1)))
+                .andExpect(jsonPath("$.items[0].sellingPrice", is(new BigDecimal("25.00"))))
+                .andExpect(jsonPath("$.id", is(2)))
+                .andExpect(jsonPath("$.items[1].id", is(2)))
+                .andExpect(jsonPath("$.items[1].productId", is(1)))
+                .andExpect(jsonPath("$.items[1].quantity", is(2)))
+                .andExpect(jsonPath("$.items[1].sellingPrice", is(new BigDecimal("25.00"))));
 
         verify(orderService, times(1)).getOrders();
     }
@@ -143,26 +150,27 @@ class OrderControllerTest {
 
         mockMvc.perform(get("/orders/{orderId}", ID))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(order1.getId()))
-                .andExpect(jsonPath("$.items[0].id", is(1)))
-                .andExpect(jsonPath("$.items[0].name", is("Adidas")))
-                .andExpect(jsonPath("$.items[0].price", is(1000)))
-                .andExpect(jsonPath("$.items[0].quantity", is(5)))
-                .andExpect(jsonPath("$.items[0].categoryId", is(1)))
-                .andExpect(jsonPath("$.items[0].vendorId", is(1)))
+                .andExpect(jsonPath("$.items[0].productId").value(1))
+                .andExpect(jsonPath("$.items[0].quantity").value(2))
+                .andExpect(jsonPath("$.items[0].sellingPrice").value(25))
                 .andDo(print());
     }
 
-   /* @Test
+    /*@Test
     void addItemToOrder() throws Exception {
         Long orderId = 1L;
-        when(orderService.addItem(orderId, product1)).thenReturn(order1);
+        OrderItem orderItem = OrderItem.builder()
+                .id(3L)
+                .productId(1L)
+                .quantity(1)
+                .sellingPrice(new BigDecimal("30")).build();
+        when(orderService.addItem(orderId, any(OrderItemDto.class))).thenReturn(order1);
         mockMvc.perform(post("/orders/{orderId}/items", orderId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtils.asJsonString(product1)))
+                        .content(JsonUtils.asJsonString(orderItem)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(JsonUtils.asJsonString(order1)));
-        verify(orderService, times(1)).addItem(orderId, product1);
+        verify(orderService, times(1)).addItem(orderId, orderItem1);
     }*/
 
     @Test
@@ -190,41 +198,47 @@ class OrderControllerTest {
         verify(orderService, times(1)).deleteOrderById(orderId);
     }
 
-   /* @Test
+    @Test
     void getOrderItem() throws Exception {
         Long orderId = 1L;
         Long itemId = 1L;
-        when(orderService.getItemOrder(orderId, itemId)).thenReturn(product1);
-        mockMvc.perform(get("/orders/{orderId}/items/{itemId}", orderId, itemId))
+        OrderItem orderItem = OrderItem.builder()
+                .id(orderItem1.getId())
+                .productId(orderItem1.getProductId())
+                .quantity(orderItem1.getQuantity())
+                .sellingPrice(orderItem1.getSellingPrice())
+                .build();
+        when(orderService.getItemOrder(orderId, itemId)).thenReturn(orderItem);
+        mockMvc.perform(get("/orders/{orderId}/items/{itemId}", orderId, itemId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(product1.getId()))
-                .andExpect(jsonPath("$.name").value(product1.getName()))
-                .andExpect(jsonPath("$.price").value(product1.getPrice()))
-                .andExpect(jsonPath("$.quantity").value(product1.getQuantity()))
-                .andExpect(jsonPath("$.categoryId").value(product1.getCategoryId()))
-                .andExpect(jsonPath("$.vendorId").value(product1.getVendorId()))
+                .andExpect(jsonPath("$.productId", is(1)))
+                .andExpect(jsonPath("$.quantity", is(2)))
+                .andExpect(jsonPath("$.sellingPrice").value(25))
                 .andDo(print());
+    }
 
-    }*/
-
-   /* @Test
+    @Test
     void getOrderItems() throws Exception {
         Long orderId = 1L;
-        when(orderService.getAllOrderItems(orderId)).thenReturn(productDtos);
-        mockMvc.perform(get("/orders/{orderId}/items", orderId))
-                .andExpect(jsonPath("$.[0].id", is(1)))
-                .andExpect(jsonPath("$.[0].name", is("Adidas")))
-                .andExpect(jsonPath("$.[0].price", is(1000)))
-                .andExpect(jsonPath("$.[0].quantity", is(5)))
-                .andExpect(jsonPath("$.[0].categoryId", is(1)))
-                .andExpect(jsonPath("$.[0].vendorId", is(1)))
-                .andExpect(jsonPath("$.[1].id", is(2)))
-                .andExpect(jsonPath("$.[1].name", is("Nike")))
-                .andExpect(jsonPath("$.[1].price", is(500)))
-                .andExpect(jsonPath("$.[1].quantity", is(3)))
-                .andExpect(jsonPath("$.[1].categoryId", is(1)))
-                .andExpect(jsonPath("$.[1].vendorId", is(1)));
-    }*/
+        when(orderService.getAllOrderItems(orderId)).thenReturn(orderItems);
+
+        mockMvc.perform(get("/orders/{orderId}/items", orderId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(orderItems.size()))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].productId").value(1))
+                .andExpect(jsonPath("$[0].quantity").value(2))
+                .andExpect(jsonPath("$[0].sellingPrice").value(25))
+                .andExpect(jsonPath("$[1].id").value(2))
+                .andExpect(jsonPath("$[1].productId").value(2))
+                .andExpect(jsonPath("$[1].quantity").value(2))
+                .andExpect(jsonPath("$[1].sellingPrice").value(25))
+                .andDo(print());
+    }
 
     @Test
     void deleteOrderItem() throws Exception {

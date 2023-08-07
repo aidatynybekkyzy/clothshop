@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +37,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @CacheEvict(value = "productsCache", allEntries = true, key = "#name")
+    @Transactional
     public ProductDto createProduct(ProductDto productDto) throws ProductAlreadyExistsException {
         log.info("Saving new Product: " + productDto);
         if (Objects.equals(productDto.getName(), "") || productDto.getName().isEmpty()) {
@@ -63,6 +65,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Cacheable(value = "productsCache", key = "#id")
+    @Transactional
     public ProductDto getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
@@ -71,6 +74,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Cacheable(value = "productsCache")
+    @Transactional
     public List<ProductDto> getAllProducts() {
         List<Product> products = productRepository.findAll();
         return products.stream()
@@ -80,6 +84,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @CacheEvict(value = "productsCache", key = "#id")
+    @Transactional
     public ProductDto updateProduct(Long id, ProductDto productDTO) {
         log.info("Product to update: " + productDTO);
         Product existingProduct = productMapper.toEntity(getProductById(id));
@@ -99,6 +104,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @CacheEvict(value = "productsCache", key = "#id")
+    @Transactional
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
             throw new ProductNotFoundException("Product not found with id: " + id);
@@ -107,6 +113,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public byte[] getProductPhoto(Long productId) {
         log.info("Getting photo from product SERVICE");
         Product product = productMapper.toEntity(getProductById(productId));
@@ -114,6 +121,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public void addPhoto(Long id, byte[] photo) {
         log.info("Adding photo to product SERVICE");
         Product product = productMapper.toEntity(getProductById(id));

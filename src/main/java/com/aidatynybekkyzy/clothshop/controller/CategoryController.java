@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -27,7 +28,7 @@ public class CategoryController {
 
     @PostMapping("/admin/create")
     @ApiOperation("Creating new category")
-    public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDTO) throws CategoryAlreadyExistsException {
+    public ResponseEntity<CategoryDto> createCategory(@RequestBody @Valid CategoryDto categoryDTO) throws CategoryAlreadyExistsException {
         log.info("CONTROLLER Creating new category");
         CategoryDto createdCategory = categoryService.createCategory(categoryDTO);
         return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
@@ -49,7 +50,7 @@ public class CategoryController {
 
     @PatchMapping("/admin/{id}")
     @ApiOperation("Updating category")
-    public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
+    public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @RequestBody @Valid CategoryDto categoryDto) {
         log.info("Update category. change: " + categoryDto.toString());
         CategoryDto updatedCategory = categoryService.updateCategory(id, categoryDto);
         return new ResponseEntity<>(updatedCategory, HttpStatus.OK);

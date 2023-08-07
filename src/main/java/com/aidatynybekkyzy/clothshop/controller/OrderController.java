@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 
@@ -40,7 +41,7 @@ public class OrderController {
     @PostMapping("/{orderId}/items")
     @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     @ApiOperation("Adding item to an order")
-    public ResponseEntity<OrderDto> addItemToOrder(@PathVariable Long orderId, @RequestBody OrderItemDto orderItemDto) {
+    public ResponseEntity<OrderDto> addItemToOrder(@PathVariable Long orderId, @RequestBody @Valid OrderItemDto orderItemDto) {
         OrderDto orderDto = orderService.addItem(orderId, orderItemDto);
         return new ResponseEntity<>(orderDto, HttpStatus.OK);
     }
@@ -64,7 +65,7 @@ public class OrderController {
     @GetMapping("/{orderId}/items/{itemId}")
     @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     @ApiOperation("Getting the orderItem by orderId and itemId")
-    public ResponseEntity<OrderItem> getOrderItem(@PathVariable Long orderId, @PathVariable Long itemId) {
+    public ResponseEntity<OrderItem> getOrderItem(@PathVariable Long orderId, @PathVariable @Valid Long itemId) {
         OrderItem orderItemDto = orderService.getItemOrder(orderId, itemId);
         return new ResponseEntity<>(orderItemDto, HttpStatus.OK);
     }

@@ -69,7 +69,7 @@ public class OrderServiceImpl implements OrderService {
 
         log.info("Item to add to order: " + orderItemDto.toString());
 
-        Order order = orderMapper.toEntity(getOrderById(orderId));
+        Order order = getOrderByIdIfExists(orderId);
 
         OrderItem orderItem = orderItemMapper.toEntity(orderItemDto);
         orderItem.setOrder(order);
