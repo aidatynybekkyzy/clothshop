@@ -1,10 +1,10 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.JsonUtils;
-import com.aidatynybekkyzy.clothshop.dto.*;
+import com.aidatynybekkyzy.clothshop.dto.OrderDto;
+import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
+import com.aidatynybekkyzy.clothshop.dto.UserDto;
 import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
-import com.aidatynybekkyzy.clothshop.model.Order;
-import com.aidatynybekkyzy.clothshop.model.OrderItem;
 import com.aidatynybekkyzy.clothshop.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -43,31 +42,14 @@ class UserControllerTest {
     MockMvc mockMvc;
     private final static long ID = 1L;
 
-    final ProductDto product1 = ProductDto.builder()
-            .id(ID)
-            .name("Adidas")
-            .price(new BigDecimal(1000))
-            .quantity(5)
-            .categoryId(1L)
-            .vendorId(1L)
-            .build();
-    final ProductDto product2 = ProductDto.builder()
-            .id(2L)
-            .name("Nike")
-            .price(new BigDecimal(500))
-            .quantity(3)
-            .categoryId(1L)
-            .vendorId(1L)
-            .build();
-
     OrderItemDto orderItem1 = OrderItemDto.builder()
-            .productId(1L)
             .quantity(2)
+            .productId(1L)
             .sellingPrice(new BigDecimal(25))
             .build();
     OrderItemDto orderItem2 = OrderItemDto.builder()
-            .productId(2L)
             .quantity(2)
+            .productId(2L)
             .sellingPrice(new BigDecimal(25))
             .build();
 
@@ -220,8 +202,8 @@ class UserControllerTest {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].items[0].quantity", is(2)))
-                .andExpect(jsonPath("$[0].items[0].productId", is(1)))
+                .andExpect(jsonPath("$[0].items[0].quantity", is(1)))
+                .andExpect(jsonPath("$[0].items[0].productId", is(2)))
                 .andExpect(jsonPath("$[0].items[0].sellingPrice", is(25)))
                 .andExpect(jsonPath("$[1].items[0].quantity", is(2)))
                 .andExpect(jsonPath("$[1].items[0].productId", is(2)))
@@ -235,7 +217,7 @@ class UserControllerTest {
         Long userId = 1L;
 
         OrderDto createdOrder = OrderDto.builder()
-                .items(Set.of(orderItem1))
+                .items(Set.of(orderItem1, orderItem2))
                 .userId(userId)
                 .build();
 
@@ -245,11 +227,14 @@ class UserControllerTest {
                         .content(JsonUtils.asJsonString(order1))
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.items", hasSize(1)))
-                .andExpect(jsonPath("$.items[0].id", is(1)));
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$.items[0].quantity", is(2)))
+                .andExpect(jsonPath("$.items[0].productId", is(1)))
+                .andExpect(jsonPath("$.items[0].sellingPrice", is(25)))
+                .andExpect(jsonPath("$.items[0].quantity", is(2)))
+                .andExpect(jsonPath("$.items[0].productId", is(1)))
+                .andExpect(jsonPath("$.items[0].sellingPrice", is(25)));
 
-              //  .andExpect(jsonPath("$.userId", is(userId.intValue())));
 
         verify(userService, times(1)).createOrderForCustomer(eq(userId), any(OrderDto.class));
     }

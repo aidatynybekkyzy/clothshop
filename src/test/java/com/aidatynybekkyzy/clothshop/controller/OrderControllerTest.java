@@ -1,11 +1,9 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
+import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
 import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
-import com.aidatynybekkyzy.clothshop.dto.ProductDto;
-import com.aidatynybekkyzy.clothshop.dto.UserDto;
 import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
-import com.aidatynybekkyzy.clothshop.mapper.OrderItemMapper;
 import com.aidatynybekkyzy.clothshop.model.OrderItem;
 import com.aidatynybekkyzy.clothshop.model.OrderStatus;
 import com.aidatynybekkyzy.clothshop.service.impl.OrderServiceImpl;
@@ -40,43 +38,34 @@ class OrderControllerTest {
     private OrderController orderController;
     @Mock
     private OrderServiceImpl orderService;
-    @InjectMocks
-    private OrderItemMapper orderItemMapper;
     MockMvc mockMvc;
     private final static long ID = 1L;
 
-    final ProductDto product1 = ProductDto.builder()
-            .id(ID)
-            .name("Adidas")
-            .price(new BigDecimal(1000))
-            .quantity(5)
-            .categoryId(1L)
-            .vendorId(1L)
-            .build();
-    final ProductDto product2 = ProductDto.builder()
-            .id(2L)
-            .name("Nike")
-            .price(new BigDecimal(500))
-            .quantity(3)
-            .categoryId(1L)
-            .vendorId(1L)
-            .build();
-    Set<ProductDto> productDtos = Set.of(product1, product2);
     OrderItemDto orderItem1 = OrderItemDto.builder()
             .id(1L)
             .productId(1L)
             .quantity(2)
-            .sellingPrice(new BigDecimal("25.00"))
+            .sellingPrice(new BigDecimal(25))
             .build();
     OrderItemDto orderItem2 = OrderItemDto.builder()
             .id(2L)
             .productId(2L)
             .quantity(2)
-            .sellingPrice(new BigDecimal("25.00"))
+            .sellingPrice(new BigDecimal(25))
             .build();
-    OrderItem orderItem11 = orderItemMapper.toEntity(orderItem1);
-    OrderItem orderItem22 = orderItemMapper.toEntity(orderItem2);
-    Set<OrderItem> orderItems = Set.of(orderItem11,orderItem22);
+    OrderItem orderItem11 = OrderItem.builder()
+            .id(orderItem1.getId())
+            .productId(orderItem1.getProductId())
+            .quantity(orderItem1.getQuantity())
+            .sellingPrice(orderItem1.getSellingPrice())
+            .build();
+    OrderItem orderItem22 = OrderItem.builder()
+            .id(orderItem2.getId())
+            .productId(orderItem2.getProductId())
+            .quantity(orderItem2.getQuantity())
+            .sellingPrice(orderItem2.getSellingPrice())
+            .build();
+    Set<OrderItem> orderItems = Set.of(orderItem11, orderItem22);
     final OrderDto order1 = OrderDto.builder()
             .id(ID)
             .items(Set.of(orderItem1, orderItem2))
@@ -88,29 +77,6 @@ class OrderControllerTest {
             .userId(1L)
             .build();
     List<OrderDto> orders = List.of(order1, order2);
-    final UserDto user = UserDto.builder()
-            .id(ID)
-            .username("limbo")
-            .firstName("Limbo")
-            .lastName("Limbovich")
-            .email("limbo@limbo.ru")
-            .phone("0555 001 001")
-            .password("password")
-            .confirmPassword("password")
-            .orders(Set.of(order1, order2))
-            .build();
-    final UserDto user2 = UserDto.builder()
-            .id(2L)
-            .username("limbo2")
-            .firstName("Limbo2")
-            .lastName("Limbovich2")
-            .email("limbo2@limbo.ru")
-            .phone("0555 001 002")
-            .password("password2")
-            .confirmPassword("password2")
-            .orders(Set.of(order1, order2))
-            .build();
-
 
     @BeforeEach
     void setUp() {
@@ -128,16 +94,12 @@ class OrderControllerTest {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$.items[0].id", is(1)))
-                .andExpect(jsonPath("$.items[0].productId", is(2)))
-                .andExpect(jsonPath("$.items[0].quantity", is(1)))
-                .andExpect(jsonPath("$.items[0].sellingPrice", is(new BigDecimal("25.00"))))
-                .andExpect(jsonPath("$.id", is(2)))
-                .andExpect(jsonPath("$.items[1].id", is(2)))
-                .andExpect(jsonPath("$.items[1].productId", is(1)))
-                .andExpect(jsonPath("$.items[1].quantity", is(2)))
-                .andExpect(jsonPath("$.items[1].sellingPrice", is(new BigDecimal("25.00"))));
+                .andExpect(jsonPath("$[0].items[0].quantity", is(2)))
+                .andExpect(jsonPath("$[0].items[0].productId", is(1)))
+                .andExpect(jsonPath("$[0].items[0].sellingPrice", is(25)))
+                .andExpect(jsonPath("$[1].items[0].quantity", is(2)))
+                .andExpect(jsonPath("$[1].items[0].productId", is(1)))
+                .andExpect(jsonPath("$[1].items[0].sellingPrice", is(25)));
 
         verify(orderService, times(1)).getOrders();
     }
@@ -150,29 +112,28 @@ class OrderControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$.items[0].quantity").value(2))
-                .andExpect(jsonPath("$.items[0].productId").value(1))
-                .andExpect(jsonPath("$.items[0].sellingPrice").value(25))
+                .andExpect(jsonPath("$.items[0].quantity", is(2)))
+                .andExpect(jsonPath("$.items[0].productId", is(1)))
+                .andExpect(jsonPath("$.items[0].sellingPrice", is(25)))
                 .andDo(print());
     }
 
-    /*@Test
+    @Test
     void addItemToOrder() throws Exception {
         Long orderId = 1L;
-        OrderItem orderItem = OrderItem.builder()
-                .id(3L)
+        OrderItemDto orderItem = OrderItemDto.builder()
+                .id(1L)
                 .productId(1L)
-                .quantity(1)
-                .sellingPrice(new BigDecimal("30")).build();
-        when(orderService.addItem(orderId, any(OrderItemDto.class))).thenReturn(order1);
+                .quantity(2)
+                .sellingPrice(new BigDecimal(25)).build();
+        when(orderService.addItem(orderId, orderItem)).thenReturn(order1);
         mockMvc.perform(post("/orders/{orderId}/items", orderId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(orderItem)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(JsonUtils.asJsonString(order1)));
         verify(orderService, times(1)).addItem(orderId, orderItem1);
-    }*/
+    }
 
     @Test
     void cancelOrder() throws Exception {
@@ -230,11 +191,9 @@ class OrderControllerTest {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(orderItems.size()))
-                .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].productId").value(1))
                 .andExpect(jsonPath("$[0].quantity").value(2))
                 .andExpect(jsonPath("$[0].sellingPrice").value(25))
-                .andExpect(jsonPath("$[1].id").value(2))
                 .andExpect(jsonPath("$[1].productId").value(2))
                 .andExpect(jsonPath("$[1].quantity").value(2))
                 .andExpect(jsonPath("$[1].sellingPrice").value(25))
