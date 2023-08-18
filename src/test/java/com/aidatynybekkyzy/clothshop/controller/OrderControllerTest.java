@@ -1,6 +1,5 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
-import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
 import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
@@ -9,7 +8,6 @@ import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionH
 import com.aidatynybekkyzy.clothshop.mapper.OrderItemMapper;
 import com.aidatynybekkyzy.clothshop.model.OrderItem;
 import com.aidatynybekkyzy.clothshop.model.OrderStatus;
-import com.aidatynybekkyzy.clothshop.repository.OrderItemRepository;
 import com.aidatynybekkyzy.clothshop.service.impl.OrderServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -148,10 +146,13 @@ class OrderControllerTest {
     void getOrderById() throws Exception {
         when(orderService.getOrderById(ID)).thenReturn(order1);
 
-        mockMvc.perform(get("/orders/{orderId}", ID))
+        mockMvc.perform(get("/orders/{orderId}", ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items[0].productId").value(1))
+                .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$.items[0].quantity").value(2))
+                .andExpect(jsonPath("$.items[0].productId").value(1))
                 .andExpect(jsonPath("$.items[0].sellingPrice").value(25))
                 .andDo(print());
     }
