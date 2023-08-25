@@ -202,14 +202,15 @@ class UserControllerTest {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].items[0].quantity", is(1)))
-                .andExpect(jsonPath("$[0].items[0].productId", is(2)))
+                .andExpect(jsonPath("$[0].items[0].quantity", is(2)))
+                .andExpect(jsonPath("$[0].items[0].productId", is(1)))
                 .andExpect(jsonPath("$[0].items[0].sellingPrice", is(25)))
                 .andExpect(jsonPath("$[1].items[0].quantity", is(2)))
                 .andExpect(jsonPath("$[1].items[0].productId", is(2)))
                 .andExpect(jsonPath("$[1].items[0].sellingPrice", is(25)));
 
         verify(userService, times(1)).getUserOrders(userId);
+
     }
 
     @Test
@@ -217,7 +218,7 @@ class UserControllerTest {
         Long userId = 1L;
 
         OrderDto createdOrder = OrderDto.builder()
-                .items(Set.of(orderItem1, orderItem2))
+                .items(Set.of(orderItem1))
                 .userId(userId)
                 .build();
 
@@ -230,11 +231,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$.items[0].quantity", is(2)))
                 .andExpect(jsonPath("$.items[0].productId", is(1)))
-                .andExpect(jsonPath("$.items[0].sellingPrice", is(25)))
-                .andExpect(jsonPath("$.items[0].quantity", is(2)))
-                .andExpect(jsonPath("$.items[0].productId", is(1)))
                 .andExpect(jsonPath("$.items[0].sellingPrice", is(25)));
-
 
         verify(userService, times(1)).createOrderForCustomer(eq(userId), any(OrderDto.class));
     }

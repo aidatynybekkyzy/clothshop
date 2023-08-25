@@ -9,28 +9,21 @@ import com.aidatynybekkyzy.clothshop.mapper.OrderMapper;
 import com.aidatynybekkyzy.clothshop.model.Order;
 import com.aidatynybekkyzy.clothshop.model.OrderItem;
 import com.aidatynybekkyzy.clothshop.model.OrderStatus;
-import com.aidatynybekkyzy.clothshop.model.User;
 import com.aidatynybekkyzy.clothshop.repository.OrderItemRepository;
 import com.aidatynybekkyzy.clothshop.repository.OrderRepository;
-import com.aidatynybekkyzy.clothshop.repository.ProductRepository;
 import com.aidatynybekkyzy.clothshop.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Service
 @Slf4j
 public class OrderServiceImpl implements OrderService {
-    private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
@@ -39,10 +32,9 @@ public class OrderServiceImpl implements OrderService {
 
     public OrderServiceImpl(
             OrderRepository orderRepository, OrderMapper orderMapper,
-            ProductRepository productRepository, OrderItemMapper orderItemMapper, OrderItemRepository orderItemRepository) {
+            OrderItemMapper orderItemMapper, OrderItemRepository orderItemRepository) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
-        this.productRepository = productRepository;
         this.orderItemMapper = orderItemMapper;
         this.orderItemRepository = orderItemRepository;
     }
@@ -76,7 +68,7 @@ public class OrderServiceImpl implements OrderService {
 
         order.getOrderItems().add(orderItem);
 
-        Order savedOrder = orderRepository.saveAndFlush(order);
+        Order savedOrder = orderRepository.save(order);
         log.info("Item added to an order ");
         return orderMapper.toDto(savedOrder);
 
@@ -98,7 +90,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void deleteOrderById(Long id) {
         Order order = getOrderByIdIfExists(id);
-        log.info("Deleting order SERVICE ");
+        log.info("Deleting order with id -- " +  id);
         orderRepository.delete(order);
     }
 
