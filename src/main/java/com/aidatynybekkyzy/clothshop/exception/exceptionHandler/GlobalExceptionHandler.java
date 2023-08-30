@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -39,17 +40,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         }
         return ResponseEntity.unprocessableEntity().body(errorResponse);
     }
+
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler({AccessDeniedException.class})
     public ResponseEntity<Object> accessDenied(AccessDeniedException exception, WebRequest request) {
         log.error("Authorization has been denied for this request");
         return buildErrorResponse(exception, HttpStatus.FORBIDDEN, request);
     }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<String> handleAuthenticationException(AuthenticationException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: " + ex.getMessage());
+    }
+
     @ExceptionHandler(PasswordIncorrectException.class)
     public ResponseEntity<Object> handlePasswordIncorrectException(PasswordIncorrectException e) {
         String errorMessage = "Incorrect password: " + e.getMessage();
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
     }
+
     @ExceptionHandler({CategoryNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<Object> handleCategoryNotFoundException(CategoryNotFoundException e, WebRequest request) {
@@ -70,6 +79,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("Failed to create/update user " + e);
         return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
     }
+
     @ExceptionHandler({CategoryAlreadyExistsException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseEntity<Object> handleCategoryAlreadyExistsException(CategoryAlreadyExistsException e, WebRequest request) {
@@ -90,38 +100,41 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("ProductNotFoundException was thrown ");
         return buildErrorResponse(e, HttpStatus.NOT_FOUND, request);
     }
+
     @ExceptionHandler({ProductAlreadyExistsException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Object> handleProductAlreadyExistsException(ProductAlreadyExistsException e, WebRequest request) {
         log.error("Failed to create/update product " + e);
         return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
     }
+
     @ExceptionHandler({ItemNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<Object> handleItemNotFoundException(ItemNotFoundException e, WebRequest request) {
         log.error("ItemNotFoundException was thrown ");
         return buildErrorResponse(e, HttpStatus.NOT_FOUND, request);
     }
+
     @ExceptionHandler({OrderNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<Object> handleOrderNotFoundException(OrderNotFoundException e, WebRequest request) {
         log.error("OrderNotFoundException was thrown ");
         return buildErrorResponse(e, HttpStatus.NOT_FOUND, request);
     }
+
     @ExceptionHandler({VendorNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<Object> handleVendorNotFoundException(VendorNotFoundException e, WebRequest request) {
         log.error("VendorNotFoundException was thrown ");
         return buildErrorResponse(e, HttpStatus.NOT_FOUND, request);
     }
+
     @ExceptionHandler({VendorAlreadyExistsException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Object> handleVendorNotFoundException(VendorAlreadyExistsException e, WebRequest request) {
         log.error("VendorAlreadyExistsException was thrown ");
         return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
     }
-
-
 
 
     /**

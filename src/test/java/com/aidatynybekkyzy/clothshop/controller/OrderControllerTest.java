@@ -95,10 +95,10 @@ class OrderControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].items[0].quantity", is(2)))
-                .andExpect(jsonPath("$[0].items[0].productId", is(1)))
+                .andExpect(jsonPath("$[0].items[0].productId", is(2)))
                 .andExpect(jsonPath("$[0].items[0].sellingPrice", is(25)))
                 .andExpect(jsonPath("$[1].items[0].quantity", is(2)))
-                .andExpect(jsonPath("$[1].items[0].productId", is(1)))
+                .andExpect(jsonPath("$[1].items[0].productId", is(2)))
                 .andExpect(jsonPath("$[1].items[0].sellingPrice", is(25)));
 
         verify(orderService, times(1)).getOrders();
