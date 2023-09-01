@@ -1,7 +1,6 @@
 package com.aidatynybekkyzy.clothshop.security.jwt;
 
 import com.aidatynybekkyzy.clothshop.repository.TokenRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,12 +17,17 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
-@RequiredArgsConstructor
 public class JWTAuthFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
-
     private final TokenRepository tokenRepository;
+
+
+    public JWTAuthFilter(JwtTokenProvider jwtTokenProvider, JwtTokenProvider jwtTokenProvider1, UserDetailsService userDetailsService, TokenRepository tokenRepository) {
+        this.jwtTokenProvider = jwtTokenProvider1;
+        this.userDetailsService = userDetailsService;
+        this.tokenRepository = tokenRepository;
+    }
 
 
     @Override
@@ -41,7 +45,7 @@ public class JWTAuthFilter extends OncePerRequestFilter {
         }
         jwt = authHeader.substring(7);
         userEmail = jwtTokenProvider.extractUsername(jwt);
-        logger.info("Extracting user email: {}" + userEmail);
+        logger.info("Extracting user email: " + userEmail);
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
             var isTokenValid = tokenRepository.findByToken(jwt)

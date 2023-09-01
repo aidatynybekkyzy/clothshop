@@ -5,11 +5,11 @@ import com.aidatynybekkyzy.clothshop.dto.UserDto;
 import com.aidatynybekkyzy.clothshop.exception.PasswordIncorrectException;
 import com.aidatynybekkyzy.clothshop.exception.UserNotFoundException;
 import com.aidatynybekkyzy.clothshop.mapper.UserMapper;
-import com.aidatynybekkyzy.clothshop.model.Role;
 import com.aidatynybekkyzy.clothshop.model.Token;
-import com.aidatynybekkyzy.clothshop.model.User;
 import com.aidatynybekkyzy.clothshop.model.TokenType;
+import com.aidatynybekkyzy.clothshop.model.User;
 import com.aidatynybekkyzy.clothshop.model.response.AuthenticationResponseDto;
+import com.aidatynybekkyzy.clothshop.repository.RoleRepository;
 import com.aidatynybekkyzy.clothshop.repository.TokenRepository;
 import com.aidatynybekkyzy.clothshop.repository.UserRepository;
 import com.aidatynybekkyzy.clothshop.security.jwt.JwtTokenProvider;
@@ -42,13 +42,13 @@ public class AuthenticationService {
     private final UserRepository userRepository;
 
     private final UserMapper userMapper;
+    private final RoleRepository roleRepository;
 
     public UserDto register(UserDto request) throws PasswordIncorrectException {
         log.info("Registering new user with email " + request.getEmail());
         if (!request.getConfirmPassword().equals(request.getPassword())) {
             throw new PasswordIncorrectException("Passwords do not match");
         }
-        var roleUser = Role.builder().roleName("USER").build();
         var user = User.builder()
                 .username(request.getUsername())
                 .firstName(request.getFirstName())
@@ -57,7 +57,7 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .confirmPassword(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
-                .role(Set.of(roleUser))
+                .role(Set.of(roleRepository.findByRoleName("USER")))
                 .build();
         userRepository.save(user);
         log.info("Saved user with email " + request.getEmail());

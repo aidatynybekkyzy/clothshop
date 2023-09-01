@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +30,7 @@ public class ProductController {
 
     @PostMapping("/admin/createProduct")
     @ApiOperation("Creating new product")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductDto> createProduct(@RequestBody @Valid ProductDto productDto) throws ProductAlreadyExistsException {
             ProductDto createdProduct = productService.createProduct(productDto);
              return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
