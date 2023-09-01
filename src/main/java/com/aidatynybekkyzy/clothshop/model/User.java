@@ -85,7 +85,7 @@ public class User extends AbstractEntity<Long> implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override

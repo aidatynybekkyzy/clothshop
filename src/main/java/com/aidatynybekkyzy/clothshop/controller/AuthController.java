@@ -40,7 +40,7 @@ public class AuthController {
     @ApiOperation("Login user")
     public ResponseEntity<AuthenticationResponseDto> authenticate(
             @RequestBody @Valid  AuthenticationRequestDto authenticationRequestDto) {
-        log.info("Doing authentication of user " + authenticationRequestDto.getEmail());
+        log.info("Doing authentication of user " + authenticationRequestDto.getUsername());
         return ResponseEntity.ok(authenticationService.authenticate(authenticationRequestDto));
     }
 

@@ -68,23 +68,22 @@ public class AuthenticationService {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
+                            request.getUsername(),
                             request.getPassword())
             );
-            User user = userService.findUserByEmail(request.getEmail())
+            User user = userService.findByUsername(request.getUsername())
                     .orElseThrow(() -> new UserNotFoundException("User does not exist"));
-            var jwtToken = jwtTokenProvider.generateToken(user);
+            var jwtToken = jwtTokenProvider.generateToken(user, user.getRole());
             revokeAllUserTokens(user);
             saveUserToken(user, jwtToken);
 
             return AuthenticationResponseDto.builder()
                     .accessToken(jwtToken)
-                    .email(request.getEmail())
+                    .username(request.getUsername())
                     .build();
         } catch (BadCredentialsException exception){
             throw new PasswordIncorrectException("Invalid password");
         }
-
     }
 
     private void saveUserToken(User user, String jwtToken) {

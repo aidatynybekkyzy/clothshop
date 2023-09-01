@@ -103,7 +103,7 @@ class AuthControllerTest {
         String jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
         AuthenticationRequestDto requestDto = new AuthenticationRequestDto();
-        requestDto.setEmail(email);
+        requestDto.setUsername(email);
         requestDto.setPassword(password);
 
         User userEntity = new User();
@@ -113,7 +113,7 @@ class AuthControllerTest {
         AuthenticationResponseDto responseDto = new AuthenticationResponseDto();
         responseDto.setAccessToken(jwtToken);
 
-        when(userService.findUserByEmail(requestDto.getEmail())).thenReturn(Optional.of(new User()));
+        when(userService.findUserByEmail(requestDto.getUsername())).thenReturn(Optional.of(new User()));
         when(jwtTokenProvider.generateToken(userEntity)).thenReturn(jwtToken);
         when(authenticationService.authenticate(requestDto)).thenReturn(responseDto);
 

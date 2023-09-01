@@ -1,17 +1,26 @@
 package com.aidatynybekkyzy.clothshop.config;
 
 import com.aidatynybekkyzy.clothshop.security.jwt.JWTAuthFilter;
+import com.aidatynybekkyzy.clothshop.service.UserService;
+import com.aidatynybekkyzy.clothshop.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
@@ -19,8 +28,8 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+    private final UserServiceImpl userService;
     private final JWTAuthFilter jwtAuthFilter;
-    private final AuthenticationProvider authenticationProvider;
     private final LogoutHandler logoutHandler;
 
     private static final String AUTH_END_POINT = "/auth/**";
@@ -32,12 +41,11 @@ public class SecurityConfig {
     private static final String ADMIN = "ADMIN";
 
     @Autowired
-    public SecurityConfig(JWTAuthFilter jwtAuthFilter, AuthenticationProvider authenticationProvider, LogoutHandler logoutHandler) {
+    public SecurityConfig(UserServiceImpl userService, JWTAuthFilter jwtAuthFilter , LogoutHandler logoutHandler) {
+        this.userService = userService;
         this.jwtAuthFilter = jwtAuthFilter;
-        this.authenticationProvider = authenticationProvider;
         this.logoutHandler = logoutHandler;
     }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -54,8 +62,8 @@ public class SecurityConfig {
                                 .antMatchers(HttpMethod.GET, "/products/").permitAll()
                                 .antMatchers(HttpMethod.GET, "/users/").permitAll()
                                 .antMatchers(HttpMethod.GET, "/orders/**").permitAll()
-                               // .antMatchers(HttpMethod.POST, "/admin/**").hasRole(ADMIN)
-                                //.antMatchers(VENDOR_ADMIN, USER_ADMIN, CATEGORY_ADMIN, ORDER_ADMIN).hasAuthority(ADMIN)
+                                .antMatchers(HttpMethod.POST, "/products/admin/createProduct").hasRole(ADMIN)
+                                .antMatchers(VENDOR_ADMIN, USER_ADMIN, CATEGORY_ADMIN, ORDER_ADMIN).hasRole(ADMIN)
                                 .anyRequest().authenticated()
                 )
                 .logout()
@@ -64,8 +72,31 @@ public class SecurityConfig {
                 .logoutSuccessHandler((request, response, authentication) ->
                         SecurityContextHolder.clearContext())
                 .and()
+                .exceptionHandling()
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                .and()
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+        daoAuthenticationProvider.setUserDetailsService(userService);
+        return daoAuthenticationProvider;
+    }
+
+    @Bean
+    BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+
+
 }

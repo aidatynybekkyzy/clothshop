@@ -16,6 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +33,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final OrderRepository orderRepository;
@@ -42,6 +46,20 @@ public class UserServiceImpl implements UserService {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.orderItemMapper = orderItemMapper;
+    }
+    @Override
+    public Optional<User> findByUsername(String username){
+        return userRepository.findByUsername(username);
+    }
+    @Override
+    @Transactional
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
+        User user = findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(String.format("Пользователь '%s' не найдет", username)));
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                user.getRole().stream().map(role -> new SimpleGrantedAuthority(role.getRoleName())).collect(Collectors.toList())
+        );
     }
 
     @Override
@@ -127,10 +145,6 @@ public class UserServiceImpl implements UserService {
         return orderMapper.toDto(savedOrder);
     }
 
-    @Override
-    public Optional<User> findUserByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
 
     private void validateUniqueEmail(String email) throws UserEmailAlreadyExistsException {
         if (userRepository.existsByEmail(email)) {

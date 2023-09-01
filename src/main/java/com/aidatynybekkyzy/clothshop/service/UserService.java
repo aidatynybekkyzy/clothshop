@@ -4,11 +4,13 @@ import com.aidatynybekkyzy.clothshop.dto.OrderDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
 import com.aidatynybekkyzy.clothshop.exception.UserEmailAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.model.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
+    UserDetails loadUserByUsername(String username);
     List<UserDto> getAllUsers();
 
     UserDto getUserById(Long id);
@@ -23,6 +25,6 @@ public interface UserService {
 
     OrderDto createOrderForCustomer(Long userId, OrderDto orderDto);
 
-    Optional<User> findUserByEmail(String email);
+    Optional<User> findByUsername(String username);
 
 }

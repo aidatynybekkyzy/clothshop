@@ -39,7 +39,7 @@ public class ProductController {
     @GetMapping("/{id}")
     @ApiOperation("Getting the product by Id")
     public ResponseEntity<ProductDto> getProduct(@PathVariable Long id) {
-        log.info("CONTROLLER  Get product by id");
+        log.info("Get product by id: {}", id);
         ProductDto productDto = productService.getProductById(id);
         return new ResponseEntity<>(productDto, HttpStatus.OK);
     }
