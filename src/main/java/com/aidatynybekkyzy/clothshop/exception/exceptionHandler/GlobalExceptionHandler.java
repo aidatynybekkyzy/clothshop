@@ -59,9 +59,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
     }
 
-    @ExceptionHandler({CategoryNotFoundException.class})
+    @ExceptionHandler({EntityNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<Object> handleCategoryNotFoundException(CategoryNotFoundException e, WebRequest request) {
+    public ResponseEntity<Object> handleEntityNotFoundException(EntityNotFoundException e, WebRequest request) {
         log.error("CategoryNotFoundException was thrown ");
         return buildErrorResponse(e, HttpStatus.NOT_FOUND, request);
     }
@@ -80,62 +80,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
     }
 
-    @ExceptionHandler({CategoryAlreadyExistsException.class})
+    @ExceptionHandler({EntityAlreadyExistsException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ResponseEntity<Object> handleCategoryAlreadyExistsException(CategoryAlreadyExistsException e, WebRequest request) {
+    public ResponseEntity<Object> handleEntityAlreadyExistsException(EntityAlreadyExistsException e, WebRequest request) {
         log.error("Failed to create/update user " + e);
         return buildErrorResponse(e, HttpStatus.CONFLICT, request);
     }
-
-    @ExceptionHandler({UserNotFoundException.class})
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException e, WebRequest request) {
-        log.error("UserNotFoundException was thrown " + e);
-        return buildErrorResponse(e, HttpStatus.NOT_FOUND, request);
-    }
-
-    @ExceptionHandler({ProductNotFoundException.class})
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<Object> handleProductNotFoundException(ProductNotFoundException e, WebRequest request) {
-        log.error("ProductNotFoundException was thrown ");
-        return buildErrorResponse(e, HttpStatus.NOT_FOUND, request);
-    }
-
-    @ExceptionHandler({ProductAlreadyExistsException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<Object> handleProductAlreadyExistsException(ProductAlreadyExistsException e, WebRequest request) {
-        log.error("Failed to create/update product " + e);
-        return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
-    }
-
-    @ExceptionHandler({ItemNotFoundException.class})
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<Object> handleItemNotFoundException(ItemNotFoundException e, WebRequest request) {
-        log.error("ItemNotFoundException was thrown ");
-        return buildErrorResponse(e, HttpStatus.NOT_FOUND, request);
-    }
-
-    @ExceptionHandler({OrderNotFoundException.class})
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<Object> handleOrderNotFoundException(OrderNotFoundException e, WebRequest request) {
-        log.error("OrderNotFoundException was thrown ");
-        return buildErrorResponse(e, HttpStatus.NOT_FOUND, request);
-    }
-
-    @ExceptionHandler({VendorNotFoundException.class})
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<Object> handleVendorNotFoundException(VendorNotFoundException e, WebRequest request) {
-        log.error("VendorNotFoundException was thrown ");
-        return buildErrorResponse(e, HttpStatus.NOT_FOUND, request);
-    }
-
-    @ExceptionHandler({VendorAlreadyExistsException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<Object> handleVendorNotFoundException(VendorAlreadyExistsException e, WebRequest request) {
-        log.error("VendorAlreadyExistsException was thrown ");
-        return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
-    }
-
 
     /**
      * Этот метод buildErrorResponse создает и возвращает объект ResponseEntity<Object> для обработки ошибок.

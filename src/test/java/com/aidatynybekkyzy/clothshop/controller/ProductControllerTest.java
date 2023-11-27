@@ -2,10 +2,9 @@ package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
+import com.aidatynybekkyzy.clothshop.exception.EntityAlreadyExistsException;
+import com.aidatynybekkyzy.clothshop.exception.EntityNotFoundException;
 import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
-import com.aidatynybekkyzy.clothshop.exception.ProductAlreadyExistsException;
-import com.aidatynybekkyzy.clothshop.exception.ProductNotFoundException;
-import com.aidatynybekkyzy.clothshop.exception.VendorNotFoundException;
 import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
 import com.aidatynybekkyzy.clothshop.service.impl.ProductServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,7 +59,7 @@ class ProductControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Success")
-    public void createProduct_success() throws Exception {
+     void createProduct_success() throws Exception {
         ProductDto productDto = createValidProductDto();
 
         ProductDto createdProductDto = new ProductDto();
@@ -90,7 +89,7 @@ class ProductControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Missing Product Name")
-    public void createProduct_missingProductName() throws Exception {
+     void createProduct_missingProductName() throws Exception {
         ProductDto productDto = createValidProductDto();
         productDto.setName(null);
         when(productService.createProduct(any(ProductDto.class))).thenThrow(InvalidArgumentException.class);
@@ -106,7 +105,7 @@ class ProductControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Empty Product Name")
-    public void createProduct_emptyProductName() throws Exception {
+     void createProduct_emptyProductName() throws Exception {
         ProductDto productDto = new ProductDto();
         productDto.setId(PRODUCT_ID);
         productDto.setName("");
@@ -122,7 +121,7 @@ class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(productDto)))
                 .andExpect(status().isBadRequest());
-        assertEquals(productDto.getName(), "");
+        assertEquals("", productDto.getName());
 
         verify(productService, times(1)).createProduct(any(ProductDto.class));
     }
@@ -130,10 +129,10 @@ class ProductControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Product with Same Name Already Exists")
-    public void createProduct_productNameAlreadyExists() throws Exception {
+     void createProduct_productNameAlreadyExists() throws Exception {
         ProductDto productDto = createValidProductDto();
 
-        when(productService.createProduct(any(ProductDto.class))).thenThrow(ProductAlreadyExistsException.class);
+        when(productService.createProduct(any(ProductDto.class))).thenThrow(EntityAlreadyExistsException.class);
 
         mockMvc.perform(post("/products/admin/createProduct")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -146,11 +145,11 @@ class ProductControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Vendor Not Found")
-    public void createProduct_vendorNotFound() throws Exception {
+     void createProduct_vendorNotFound() throws Exception {
         ProductDto productDto = createValidProductDto();
         productDto.setVendorId(3L);
 
-        when(productService.createProduct(any(ProductDto.class))).thenThrow(VendorNotFoundException.class);
+        when(productService.createProduct(any(ProductDto.class))).thenThrow(EntityNotFoundException.class);
         mockMvc.perform(post("/products/admin/createProduct")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(productDto)))
@@ -243,7 +242,7 @@ class ProductControllerTest {
     @Test
     void deleteProduct_productNotFound() throws Exception {
         final Long productId = 3L;
-        doThrow(ProductNotFoundException.class).when(productService).deleteProduct(productId);
+        doThrow(EntityNotFoundException.class).when(productService).deleteProduct(productId);
         mockMvc.perform(delete("/products/admin/{id}", productId))
                 .andExpect(status().isNotFound())
                 .andDo(print());

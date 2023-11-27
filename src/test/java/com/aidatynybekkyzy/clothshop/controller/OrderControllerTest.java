@@ -5,7 +5,7 @@ import com.aidatynybekkyzy.clothshop.dto.OrderDto;
 import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
 import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
 import com.aidatynybekkyzy.clothshop.model.OrderItem;
-import com.aidatynybekkyzy.clothshop.model.OrderStatus;
+import com.aidatynybekkyzy.clothshop.enums.OrderStatus;
 import com.aidatynybekkyzy.clothshop.service.impl.OrderServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,13 +54,12 @@ class OrderControllerTest {
             .sellingPrice(new BigDecimal(25))
             .build();
     OrderItem orderItem11 = OrderItem.builder()
-            .id(orderItem1.getId())
             .productId(orderItem1.getProductId())
             .quantity(orderItem1.getQuantity())
             .sellingPrice(orderItem1.getSellingPrice())
             .build();
+
     OrderItem orderItem22 = OrderItem.builder()
-            .id(orderItem2.getId())
             .productId(orderItem2.getProductId())
             .quantity(orderItem2.getQuantity())
             .sellingPrice(orderItem2.getSellingPrice())
@@ -165,11 +164,11 @@ class OrderControllerTest {
         Long orderId = 1L;
         Long itemId = 1L;
         OrderItem orderItem = OrderItem.builder()
-                .id(orderItem1.getId())
                 .productId(orderItem1.getProductId())
                 .quantity(orderItem1.getQuantity())
                 .sellingPrice(orderItem1.getSellingPrice())
                 .build();
+        orderItem.setId(orderItem1.getId());
         when(orderService.getItemOrder(orderId, itemId)).thenReturn(orderItem);
         mockMvc.perform(get("/orders/{orderId}/items/{itemId}", orderId, itemId)
                         .contentType(MediaType.APPLICATION_JSON)

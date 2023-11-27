@@ -1,5 +1,6 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
+import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.AuthenticationRequestDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
 import com.aidatynybekkyzy.clothshop.model.Role;
@@ -8,7 +9,6 @@ import com.aidatynybekkyzy.clothshop.model.response.AuthenticationResponseDto;
 import com.aidatynybekkyzy.clothshop.security.jwt.JwtTokenProvider;
 import com.aidatynybekkyzy.clothshop.service.UserService;
 import com.aidatynybekkyzy.clothshop.service.impl.AuthenticationService;
-import com.aidatynybekkyzy.clothshop.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -100,7 +100,7 @@ class AuthControllerTest {
 
         String email = "john.doe@example.com";
         String password = "password123";
-        String jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+        String jwtToken = "";
 
         AuthenticationRequestDto requestDto = new AuthenticationRequestDto();
         requestDto.setUsername(email);
@@ -110,11 +110,15 @@ class AuthControllerTest {
         userEntity.setId(1L);
         userEntity.setEmail(email);
 
+        Role role = new Role();
+        role.setRoleName("ADMIN");
+        userEntity.setRole(Set.of(role));
+
         AuthenticationResponseDto responseDto = new AuthenticationResponseDto();
         responseDto.setAccessToken(jwtToken);
 
-        when(userService.findUserByEmail(requestDto.getUsername())).thenReturn(Optional.of(new User()));
-        when(jwtTokenProvider.generateToken(userEntity)).thenReturn(jwtToken);
+        when(userService.findByUsername(requestDto.getUsername())).thenReturn(Optional.of(userEntity));
+        when(jwtTokenProvider.generateToken(userEntity, userEntity.getRole())).thenReturn(jwtToken);
         when(authenticationService.authenticate(requestDto)).thenReturn(responseDto);
 
         mockMvc.perform(post("/auth/login")

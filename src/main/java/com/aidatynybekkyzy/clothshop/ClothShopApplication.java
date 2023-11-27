@@ -12,8 +12,6 @@ import javax.persistence.PersistenceContext;
 @EntityScan("com.aidatynybekkyzy.clothshop.model")
 @EnableCaching
 public class ClothShopApplication {
-    @PersistenceContext
-    private EntityManager entityManager;
 
     public static void main(String[] args) {
         SpringApplication.run(ClothShopApplication.class, args);

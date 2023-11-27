@@ -2,13 +2,12 @@ package com.aidatynybekkyzy.clothshop.service.impl;
 
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
 import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
-import com.aidatynybekkyzy.clothshop.exception.ItemNotFoundException;
-import com.aidatynybekkyzy.clothshop.exception.OrderNotFoundException;
+import com.aidatynybekkyzy.clothshop.exception.EntityNotFoundException;
 import com.aidatynybekkyzy.clothshop.mapper.OrderItemMapper;
 import com.aidatynybekkyzy.clothshop.mapper.OrderMapper;
 import com.aidatynybekkyzy.clothshop.model.Order;
 import com.aidatynybekkyzy.clothshop.model.OrderItem;
-import com.aidatynybekkyzy.clothshop.model.OrderStatus;
+import com.aidatynybekkyzy.clothshop.enums.OrderStatus;
 import com.aidatynybekkyzy.clothshop.repository.OrderItemRepository;
 import com.aidatynybekkyzy.clothshop.repository.OrderRepository;
 import com.aidatynybekkyzy.clothshop.service.OrderService;
@@ -103,7 +102,7 @@ public class OrderServiceImpl implements OrderService {
                 .stream()
                 .filter(product -> product.getId().equals(itemId))
                 .findFirst()
-                .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + itemId));
+                .orElseThrow(() -> new EntityNotFoundException("Item not found with id: " + itemId));
     }
 
     @Override
@@ -125,7 +124,7 @@ public class OrderServiceImpl implements OrderService {
                 .stream()
                 .filter(item -> item.getId().equals(itemId))
                 .findFirst()
-                .orElseThrow(() -> new ItemNotFoundException(String.format("Order item with id: '%s' not found in order with id: '%s'", itemId, orderId)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Order item with id: '%s' not found in order with id: '%s'", itemId, orderId)));
         // log.info("OrderItems: " + order.getOrderItems());
         order.remove(orderItem.getId());
         orderItemRepository.delete(orderItem);
@@ -145,6 +144,6 @@ public class OrderServiceImpl implements OrderService {
 
     private Order getOrderByIdIfExists(Long id) {
         return orderRepository.findById(id)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));
     }
 }

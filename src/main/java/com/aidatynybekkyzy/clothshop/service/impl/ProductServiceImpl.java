@@ -1,10 +1,7 @@
 package com.aidatynybekkyzy.clothshop.service.impl;
 
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
-import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
-import com.aidatynybekkyzy.clothshop.exception.ProductAlreadyExistsException;
-import com.aidatynybekkyzy.clothshop.exception.ProductNotFoundException;
-import com.aidatynybekkyzy.clothshop.exception.VendorNotFoundException;
+import com.aidatynybekkyzy.clothshop.exception.*;
 import com.aidatynybekkyzy.clothshop.mapper.ProductMapper;
 import com.aidatynybekkyzy.clothshop.model.Product;
 import com.aidatynybekkyzy.clothshop.model.Vendor;
@@ -38,18 +35,18 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @CacheEvict(value = "productsCache", allEntries = true, key = "#name")
     @Transactional
-    public ProductDto createProduct(ProductDto productDto) throws ProductAlreadyExistsException {
+    public ProductDto createProduct(ProductDto productDto) {
         log.info("Saving new Product: " + productDto);
         if (Objects.equals(productDto.getName(), "") || productDto.getName().isEmpty()) {
             log.error("Product name is empty or null " + productDto + "error: " + InvalidArgumentException.class.getName());
             throw new InvalidArgumentException("Product name is required ");
         }
         if (productRepository.existsByName(productDto.getName())) {
-            log.error("Product with name: " + productDto.getName() + " already exists. Error: " + ProductAlreadyExistsException.class);
-            throw new ProductAlreadyExistsException("Product with this name already exists " + productDto.getName());
+            log.error("Product with name: " + productDto.getName() + " already exists. Error: " + EntityAlreadyExistsException.class);
+            throw new EntityAlreadyExistsException("Product with this name already exists " + productDto.getName());
         }
         Vendor vendor = vendorRepository.findById(productDto.getVendorId())
-                .orElseThrow(() -> new VendorNotFoundException("Vendor not found with ID: " + productDto.getVendorId()));
+                .orElseThrow(() -> new EntityNotFoundException("Vendor not found with ID: " + productDto.getVendorId()));
 
         Product product = Product.builder()
                 .name(productDto.getName())
@@ -68,7 +65,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductDto getProductById(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
         return productMapper.toDto(product);
     }
 
@@ -107,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException("Product not found with id: " + id);
+            throw new EntityNotFoundException("Product not found with id: " + id);
         }
         productRepository.deleteById(id);
     }

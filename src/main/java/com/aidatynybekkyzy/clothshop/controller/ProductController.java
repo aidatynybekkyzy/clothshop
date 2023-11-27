@@ -1,7 +1,6 @@
 package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
-import com.aidatynybekkyzy.clothshop.exception.ProductAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.service.ProductService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -28,10 +27,10 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @PostMapping("/admin/createProduct")
+    @PostMapping("/createProduct")
     @ApiOperation("Creating new product")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductDto> createProduct(@RequestBody @Valid ProductDto productDto) throws ProductAlreadyExistsException {
+    public ResponseEntity<ProductDto> createProduct(@RequestBody @Valid ProductDto productDto)   {
             ProductDto createdProduct = productService.createProduct(productDto);
              return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }
@@ -51,7 +50,7 @@ public class ProductController {
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
-    @PatchMapping("/admin/{id}")
+    @PatchMapping("/{id}")
     @ApiOperation("Updating the product")
     public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody @Valid ProductDto productDto) {
         ProductDto updatedProduct = productService.updateProduct(id, productDto);
@@ -65,14 +64,14 @@ public class ProductController {
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(photo);
     }
 
-    @DeleteMapping("/admin/{id}")
+    @DeleteMapping("/{id}")
     @ApiOperation("Deleting the product by id")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/admin/{id}/photo")
+    @PostMapping("/{id}/photo")
     @ApiOperation("Adding photo to a product")
     public ResponseEntity<?> addPhoto(@PathVariable Long id, @RequestParam("photo") MultipartFile photo) throws IOException {
         byte[] photoBytes = photo.getBytes();

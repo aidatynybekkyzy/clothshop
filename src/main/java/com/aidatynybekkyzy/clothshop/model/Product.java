@@ -16,10 +16,7 @@ import java.util.Arrays;
 @AllArgsConstructor
 @Builder
 public class Product extends AbstractEntity<Long> {
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    @Column(nullable = false, updatable = false, unique = true)
-    private Long id;
+
     @Column(length = 100, nullable = false)
     private String name;
     @Column(nullable = false)

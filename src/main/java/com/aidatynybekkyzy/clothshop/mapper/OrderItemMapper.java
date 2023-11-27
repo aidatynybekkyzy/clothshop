@@ -10,6 +10,7 @@ import java.util.Set;
 @Mapper(componentModel = "spring")
 public interface OrderItemMapper {
     @Mapping(source = "productId", target = "productId")
+    @Mapping(source = "id", target = "id")
     OrderItemDto toDto(OrderItem orderItem);
 
     @Mapping(source = "productId", target = "productId")

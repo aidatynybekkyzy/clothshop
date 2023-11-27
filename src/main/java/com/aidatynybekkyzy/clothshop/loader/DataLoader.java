@@ -1,7 +1,7 @@
 package com.aidatynybekkyzy.clothshop.loader;
 
 import com.aidatynybekkyzy.clothshop.model.*;
-import com.aidatynybekkyzy.clothshop.model.OrderStatus;
+import com.aidatynybekkyzy.clothshop.enums.OrderStatus;
 import com.aidatynybekkyzy.clothshop.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -95,7 +95,7 @@ public class DataLoader implements CommandLineRunner {
         userRepository.save(user);
 
         Order order = new Order();
-        order.setOrderId(1L);
+        order.setId(1L);
         order.setShipDate(LocalDateTime.now());
         order.setCreatedAt(LocalDateTime.now());
         order.setStatus(OrderStatus.PLACED.name());
@@ -104,12 +104,12 @@ public class DataLoader implements CommandLineRunner {
         orderRepository.save(order);
 
         OrderItem item1 = OrderItem.builder()
-                .id(1L)
                 .productId(1L)
                 .quantity(12)
                 .sellingPrice(new BigDecimal(1500))
                 .order(order)
                 .build();
+        item1.setId(1L);
 
         order.setOrderItems(Set.of(item1));
         user.setOrders(Set.of(order));

@@ -2,10 +2,9 @@ package com.aidatynybekkyzy.clothshop.service.impl;
 
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.VendorDto;
+import com.aidatynybekkyzy.clothshop.exception.EntityAlreadyExistsException;
+import com.aidatynybekkyzy.clothshop.exception.EntityNotFoundException;
 import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
-import com.aidatynybekkyzy.clothshop.exception.ProductAlreadyExistsException;
-import com.aidatynybekkyzy.clothshop.exception.VendorAlreadyExistsException;
-import com.aidatynybekkyzy.clothshop.exception.VendorNotFoundException;
 import com.aidatynybekkyzy.clothshop.mapper.VendorMapper;
 import com.aidatynybekkyzy.clothshop.model.Product;
 import com.aidatynybekkyzy.clothshop.model.Vendor;
@@ -41,7 +40,7 @@ public class VendorServiceImpl implements VendorService {
     @CacheEvict(value = "vendorsCache", allEntries = true)
     public VendorDto createVendor(VendorDto vendorDto) {
         if (vendorRepository.existsByVendorName(vendorDto.getVendorName())) {
-            throw new VendorAlreadyExistsException("Vendor with this name already exists ");
+            throw new EntityAlreadyExistsException("Vendor with this name already exists ");
         }
         Vendor vendor = vendorMapper.toEntity(vendorDto);
         Vendor savedVendor = vendorRepository.save(vendor);
@@ -52,7 +51,7 @@ public class VendorServiceImpl implements VendorService {
     @CacheEvict(value = "vendorsCache", key = "#id")
     public VendorDto updateVendor(Long id, VendorDto vendorDto) {
         Vendor vendorExisting = vendorRepository.findById(id)
-                .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + vendorDto.getId()));
+                .orElseThrow(() -> new EntityNotFoundException("Vendor not found with id: " + vendorDto.getId()));
 
         if (vendorDto.getVendorName() == null || vendorDto.getVendorName().isEmpty()) {
             throw new InvalidArgumentException("Vendor name is required! ");
@@ -67,7 +66,7 @@ public class VendorServiceImpl implements VendorService {
     @Cacheable(value = "vendorsCache", key = "#id")
     public VendorDto getVendorById(Long id) {
         Vendor vendor = vendorRepository.findById(id)
-                .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Vendor not found with id: " + id));
         return vendorMapper.toDto(vendor);
     }
 
@@ -75,20 +74,20 @@ public class VendorServiceImpl implements VendorService {
     @CacheEvict(value = "vendorsCache", key = "#id")
     public void deleteVendorById(Long id) {
         Vendor vendor = vendorRepository.findById(id)
-                .orElseThrow(() -> new VendorNotFoundException("Vendor not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Vendor not found with id: " + id));
         vendorRepository.delete(vendor);
     }
 
     @Override
     @CacheEvict(value = "vendorsCache", key = "#id")
-    public VendorDto addProductToVendor(long id, ProductDto productDto) throws ProductAlreadyExistsException {
+    public VendorDto addProductToVendor(long id, ProductDto productDto) {
         Vendor vendor = vendorMapper.toEntity(getVendorById(id));
 
         if (productDto.getName() == null || productDto.getName().isEmpty()) {
             throw new InvalidArgumentException("Product name is required! ");
         }
         if (vendor.getProducts().stream().anyMatch(p -> p.getName().equalsIgnoreCase(productDto.getName()))) {
-            throw new ProductAlreadyExistsException("Product with the same name already exists for this vendor");
+            throw new EntityAlreadyExistsException("Product with the same name already exists for this vendor");
         }
 
         Product product = Product.builder()

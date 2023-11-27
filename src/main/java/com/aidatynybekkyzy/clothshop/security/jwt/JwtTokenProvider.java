@@ -7,16 +7,15 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
-@Service @Slf4j
+@Service
+@Slf4j
 public class JwtTokenProvider {
 
     private static final String SECRET_KEY = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
@@ -25,7 +24,7 @@ public class JwtTokenProvider {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public Set<String> getRoleNames(Set <Role> userRoles){
+    public Set<String> getRoleNames(Set<Role> userRoles) {
         Set<String> result = new HashSet<>();
         userRoles.forEach(role -> result.add(role.getRoleName()));
         return result;

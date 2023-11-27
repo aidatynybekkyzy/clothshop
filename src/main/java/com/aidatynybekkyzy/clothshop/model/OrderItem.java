@@ -12,10 +12,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "orderItems")
-public class OrderItem {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+public class OrderItem extends AbstractEntity<Long> {
 
     private Long productId;
 

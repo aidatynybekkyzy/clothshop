@@ -2,8 +2,8 @@ package com.aidatynybekkyzy.clothshop.service.impl;
 
 import com.aidatynybekkyzy.clothshop.dto.AuthenticationRequestDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
+import com.aidatynybekkyzy.clothshop.exception.EntityNotFoundException;
 import com.aidatynybekkyzy.clothshop.exception.PasswordIncorrectException;
-import com.aidatynybekkyzy.clothshop.exception.UserNotFoundException;
 import com.aidatynybekkyzy.clothshop.mapper.UserMapper;
 import com.aidatynybekkyzy.clothshop.model.Token;
 import com.aidatynybekkyzy.clothshop.model.TokenType;
@@ -72,7 +72,7 @@ public class AuthenticationService {
                             request.getPassword())
             );
             User user = userService.findByUsername(request.getUsername())
-                    .orElseThrow(() -> new UserNotFoundException("User does not exist"));
+                    .orElseThrow(() -> new EntityNotFoundException("User does not exist"));
             var jwtToken = jwtTokenProvider.generateToken(user, user.getRole());
             revokeAllUserTokens(user);
             saveUserToken(user, jwtToken);

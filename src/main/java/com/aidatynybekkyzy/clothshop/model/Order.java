@@ -1,6 +1,7 @@
 package com.aidatynybekkyzy.clothshop.model;
 
 
+import com.aidatynybekkyzy.clothshop.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +16,6 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -25,10 +25,8 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @Slf4j
-public class Order {
-    @Id @NotNull
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long orderId;
+public class Order extends AbstractEntity<Long> {
+
     @CreationTimestamp
     private LocalDateTime shipDate;
 

@@ -3,8 +3,8 @@ package com.aidatynybekkyzy.clothshop.controller;
 import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.CategoryDto;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
-import com.aidatynybekkyzy.clothshop.exception.CategoryAlreadyExistsException;
-import com.aidatynybekkyzy.clothshop.exception.CategoryNotFoundException;
+import com.aidatynybekkyzy.clothshop.exception.EntityAlreadyExistsException;
+import com.aidatynybekkyzy.clothshop.exception.EntityNotFoundException;
 import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
 import com.aidatynybekkyzy.clothshop.service.impl.CategoryServiceImpl;
@@ -74,7 +74,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    public void testCreateCategory_success() throws Exception {
+     void testCreateCategory_success() throws Exception {
         final CategoryDto createdMockCategory = CategoryDto.builder()
                 .id(ID)
                 .categoryName(CATEGORY_NAME)
@@ -91,7 +91,7 @@ class CategoryControllerTest {
         verify(categoryService, times(1)).createCategory(any(CategoryDto.class));
     }
     @Test
-    public void testCreateCategory_InvalidArgumentException() throws Exception {
+     void testCreateCategory_InvalidArgumentException() throws Exception {
         final CategoryDto invalidCategory = CategoryDto.builder()
                 .categoryName("") // Empty category name
                 .build();
@@ -107,12 +107,12 @@ class CategoryControllerTest {
     }
     @Test
     @DisplayName("Get Category by Id - Error: Category Already Exists")
-    public void testCreateCategory_CategoryAlreadyExistsException() throws Exception {
+     void testCreateCategory_CategoryAlreadyExistsException() throws Exception {
         final CategoryDto existingCategory = CategoryDto.builder()
                 .categoryName("Existing Category")
                 .build();
 
-        when(categoryService.createCategory(any(CategoryDto.class))).thenThrow(CategoryAlreadyExistsException.class);
+        when(categoryService.createCategory(any(CategoryDto.class))).thenThrow(EntityAlreadyExistsException.class);
 
         mockMvc.perform(post("/categories/admin/create")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -138,7 +138,7 @@ class CategoryControllerTest {
     void getCategory_categoryNotFound() throws Exception {
         final Long categoryId = 1L;
 
-        when(categoryService.getCategoryById(categoryId)).thenThrow(CategoryNotFoundException.class);
+        when(categoryService.getCategoryById(categoryId)).thenThrow(EntityNotFoundException.class);
 
         mockMvc.perform(get("/categories/{id}", categoryId))
                 .andExpect(status().isNotFound());
@@ -149,7 +149,7 @@ class CategoryControllerTest {
 
     @Test
     @DisplayName("Get All Categories")
-    public void testGetAllCategories_success() throws Exception {
+     void testGetAllCategories_success() throws Exception {
         when(categoryService.getAllCategories()).thenReturn(categories);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/categories"))
@@ -211,7 +211,7 @@ class CategoryControllerTest {
     @DisplayName("Delete Category - Error: Category Not Found")
     void deleteCategory_categoryNotFound() throws Exception {
         final Long categoryId = 1L;
-        doThrow(CategoryNotFoundException.class)
+        doThrow(EntityNotFoundException.class)
                 .when(categoryService).deleteCategory(categoryId);
 
         mockMvc.perform(delete("/categories/admin/{id}", categoryId))

@@ -2,6 +2,7 @@ package com.aidatynybekkyzy.clothshop.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -23,37 +24,38 @@ import java.util.Set;
 @NoArgsConstructor
 @Table(name = "users")
 public class User extends AbstractEntity<Long> implements UserDetails {
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO, generator="users_seq_gen")
-    @SequenceGenerator(name="users_seq_gen", sequenceName="users_sequence", allocationSize = 1)
-    @Column(nullable = false, updatable = false, unique = true)
-    private Long id;
+
     @Column(length = 100, nullable = false)
     private String username;
 
+    @NotBlank
     @Size(min = 4, max = 50)
-    @Column(name = "firstname", nullable = false)
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
+    @NotBlank
     @Size(min = 4, max = 50)
-    @Column(name = "lastname", nullable = false)
+    @Column(name = "last_name", nullable = false)
     private String lastName;
-    @Column(name = "email", unique = true, nullable = false)
+
     @Email
     @NotEmpty
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
+    @JsonIgnore
     @Size(min = 7, max = 60, message = "{validation.user.passwordSize}")
     @Column(name = "password", nullable = false)
-    @JsonIgnore
     private String password;
-    @Transient // чтобы не сохранять это поле в бд (не сериализовать)
+
+    @Transient
     @JsonIgnore
     private String confirmPassword;
     @Column(name = "phone", length = 20, nullable = false, unique = true)
     private String phone;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user") //fetch = FetchType.LAZY - при вызове orders не будет загружаться
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "user")
+    //fetch = FetchType.LAZY - при вызове orders не будет загружаться
     private Set<Order> orders = new HashSet<>();
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
@@ -67,17 +69,19 @@ public class User extends AbstractEntity<Long> implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         HashSet<GrantedAuthority> authorities = new HashSet<>(role.size());
-        for (Role role : role)
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+        for ( final Role role : role)
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName()));
         return authorities;
     }
+
     public void add(Order order) {
 
-        if(order != null) {
+        if (order != null) {
             orders.add(order);
             order.setUser(this);
         }
     }
+
     @Override
     public String getPassword() {
         return password;

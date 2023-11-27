@@ -3,19 +3,20 @@ package com.aidatynybekkyzy.clothshop.service.impl;
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
 import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
-import com.aidatynybekkyzy.clothshop.exception.UserEmailAlreadyExistsException;
-import com.aidatynybekkyzy.clothshop.exception.UserNotFoundException;
+import com.aidatynybekkyzy.clothshop.enums.OrderStatus;
+import com.aidatynybekkyzy.clothshop.exception.EntityAlreadyExistsException;
+import com.aidatynybekkyzy.clothshop.exception.EntityNotFoundException;
 import com.aidatynybekkyzy.clothshop.mapper.OrderItemMapper;
 import com.aidatynybekkyzy.clothshop.mapper.OrderMapper;
 import com.aidatynybekkyzy.clothshop.mapper.UserMapper;
-import com.aidatynybekkyzy.clothshop.model.*;
+import com.aidatynybekkyzy.clothshop.model.Order;
+import com.aidatynybekkyzy.clothshop.model.OrderItem;
+import com.aidatynybekkyzy.clothshop.model.User;
 import com.aidatynybekkyzy.clothshop.repository.OrderRepository;
 import com.aidatynybekkyzy.clothshop.repository.UserRepository;
 import com.aidatynybekkyzy.clothshop.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class UserServiceImpl implements UserService, UserDetailsService {
+public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final OrderRepository orderRepository;
@@ -47,20 +48,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         this.orderMapper = orderMapper;
         this.orderItemMapper = orderItemMapper;
     }
+
     @Override
-    public Optional<User> findByUsername(String username){
+    public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
-    @Override
-    @Transactional
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
-        User user = findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(String.format("Пользователь '%s' не найдет", username)));
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                user.getRole().stream().map(role -> new SimpleGrantedAuthority(role.getRoleName())).collect(Collectors.toList())
-        );
-    }
+
 
     @Override
     public List<UserDto> getAllUsers() {
@@ -72,13 +65,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Transactional
     public UserDto getUserById(Long id) {
         log.info("SERVICE  Get user by id");
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
         return userMapper.toDto(user);
     }
 
     @Override
     @Transactional
-    public UserDto createUser(@Valid UserDto userDto) throws UserEmailAlreadyExistsException {
+    public UserDto createUser(@Valid UserDto userDto) {
         validateUniqueEmail(userDto.getEmail());
         User user = userMapper.toEntity(userDto);
         User savedUser = userRepository.save(user);
@@ -87,7 +80,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     @Transactional
-    public UserDto updateUser(Long id, UserDto userDto) throws UserEmailAlreadyExistsException {
+    public UserDto updateUser(Long id, UserDto userDto) {
         User existingUser = userMapper.toEntity(getUserById(id));
 
         validateUniqueEmail(userDto.getEmail(), id);
@@ -119,7 +112,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         User user = userMapper.toEntity(getUserById(userId));
         log.info("creating new order");
         Order order = Order.builder()
-                .orderId(orderDto.getId())
                 .shipDate(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .status(OrderStatus.PLACED.name())
@@ -127,15 +119,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 .orderItems(new HashSet<>())
                 .user(user)
                 .build();
+        order.setId(orderDto.getId());
 
         Set<OrderItemDto> items = orderDto.getItems();
-        for (OrderItemDto orderItem: items) {
+        for (OrderItemDto orderItem : items) {
             OrderItem item = OrderItem.builder()
-                    .id(orderItem.getId())
                     .quantity(orderItem.getQuantity())
                     .sellingPrice(orderItem.getSellingPrice())
                     .productId(orderItem.getProductId())
                     .build();
+            item.setId(orderItem.getId());
             order.add(item);
         }
         user.add(order);
@@ -146,15 +139,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
 
-    private void validateUniqueEmail(String email) throws UserEmailAlreadyExistsException {
+    private void validateUniqueEmail(String email) {
         if (userRepository.existsByEmail(email)) {
-            throw new UserEmailAlreadyExistsException("User with this email already exists: " + email);
+            throw new EntityAlreadyExistsException("User with this email already exists: " + email);
         }
     }
 
-    private void validateUniqueEmail(String email, Long userId) throws UserEmailAlreadyExistsException {
+    private void validateUniqueEmail(String email, Long userId) {
         if (userRepository.existsByEmailAndIdNot(email, userId)) {
-            throw new UserEmailAlreadyExistsException("User with this email already exists: " + email);
+            throw new EntityAlreadyExistsException("User with this email already exists: " + email);
         }
     }
 

@@ -2,8 +2,8 @@ package com.aidatynybekkyzy.clothshop.service.impl;
 
 import com.aidatynybekkyzy.clothshop.dto.CategoryDto;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
-import com.aidatynybekkyzy.clothshop.exception.CategoryAlreadyExistsException;
-import com.aidatynybekkyzy.clothshop.exception.CategoryNotFoundException;
+import com.aidatynybekkyzy.clothshop.exception.EntityNotFoundException;
+import com.aidatynybekkyzy.clothshop.exception.EntityAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
 import com.aidatynybekkyzy.clothshop.mapper.CategoryMapper;
 import com.aidatynybekkyzy.clothshop.mapper.ProductMapper;
@@ -39,7 +39,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override //todo categoryId returns null instead of actualID
-    public CategoryDto createCategory(CategoryDto categoryDto) throws CategoryAlreadyExistsException {
+    public CategoryDto createCategory(CategoryDto categoryDto) {
 
         Category category = categoryMapper.toEntity(categoryDto);
 
@@ -47,7 +47,7 @@ public class CategoryServiceImpl implements CategoryService {
             throw new InvalidArgumentException("Category name is required");
         }
         if (categoryRepository.existsByCategoryName(category.getCategoryName())) {
-            throw new CategoryAlreadyExistsException("Category already exists with name: " + category.getCategoryName());
+            throw new EntityAlreadyExistsException("Category already exists with name: " + category.getCategoryName());
         }
         Long categoryId = categoryDto.getId();
         category.setId(categoryId);
@@ -70,7 +70,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto getCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + id));
         return categoryMapper.toDto(category);
     }
 
@@ -107,7 +107,7 @@ public class CategoryServiceImpl implements CategoryService {
     @CacheEvict(value = "categoriesCache", key = "#id")
     public void deleteCategory(Long id) {
         if (!categoryRepository.existsById(id)) {
-            throw new CategoryNotFoundException("Category not found with id: " + id);
+            throw new EntityNotFoundException("Category not found with id: " + id);
         }
         categoryRepository.deleteById(id);
     }

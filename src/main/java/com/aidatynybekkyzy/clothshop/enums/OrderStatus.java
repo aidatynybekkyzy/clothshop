@@ -1,4 +1,4 @@
-package com.aidatynybekkyzy.clothshop.model;
+package com.aidatynybekkyzy.clothshop.enums;
 
 public enum OrderStatus {
     PLACED,

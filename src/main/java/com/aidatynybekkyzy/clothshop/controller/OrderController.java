@@ -17,6 +17,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/orders")
+@PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
 public class OrderController {
     private final OrderService orderService;
 
@@ -26,11 +27,12 @@ public class OrderController {
 
     @GetMapping
     @ApiOperation("Getting list of orders")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     public ResponseEntity<List<OrderDto>> getAllOrders() {
         return new ResponseEntity<>(orderService.getOrders(), HttpStatus.OK);
     }
 
-    @GetMapping("/{orderId}")
+    @GetMapping("/{orderId}") //todo currentUser
     @ApiOperation("Getting the order by id")
     public ResponseEntity<OrderDto> getOrderById(@PathVariable Long orderId) {
         OrderDto order = orderService.getOrderById(orderId);
@@ -39,7 +41,6 @@ public class OrderController {
     }
 
     @PostMapping("/{orderId}/items")
-    @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     @ApiOperation("Adding item to an order")
     public ResponseEntity<OrderDto> addItemToOrder(@PathVariable Long orderId, @RequestBody @Valid OrderItemDto orderItemDto) {
         OrderDto orderDto = orderService.addItem(orderId, orderItemDto);
@@ -47,7 +48,6 @@ public class OrderController {
     }
 
     @PostMapping("/{id}/cancel")
-    @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     @ApiOperation("Cancel the order")
     public ResponseEntity<ApiResponse> cancelOrder(@PathVariable Long id) {
         orderService.cancelOrderById(id);
@@ -55,7 +55,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN')")
     @ApiOperation("Deleting the order by id")
     public ResponseEntity<ApiResponse> deleteOrderById(@PathVariable Long id) {
         orderService.deleteOrderById(id);
@@ -63,7 +63,6 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}/items/{itemId}")
-    @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     @ApiOperation("Getting the orderItem by orderId and itemId")
     public ResponseEntity<OrderItem> getOrderItem(@PathVariable Long orderId, @PathVariable @Valid Long itemId) {
         OrderItem orderItemDto = orderService.getItemOrder(orderId, itemId);
@@ -71,7 +70,6 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}/items")
-    @PreAuthorize("hasRole('ADMIN')or isAuthenticated()")
     @ApiOperation("Getting set of orderItems by orderId")
     public ResponseEntity<Set<OrderItem>> getOrderItems(@PathVariable Long orderId) {
         Set<OrderItem> orderItemDtos = orderService.getAllOrderItems(orderId);
@@ -79,7 +77,6 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}/items/{itemId}")
-    @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     @ApiOperation("Deleting orderItem by orderId and itemId")
     public ResponseEntity<ApiResponse> deleteOrderItem(@PathVariable Long orderId, @PathVariable Long itemId) {
         orderService.deleteOrderItem(orderId, itemId);
@@ -87,7 +84,6 @@ public class OrderController {
     }
 
     @PostMapping("/{id}/purchase")
-    @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
     @ApiOperation("Purchasing the order by orderId")
     public ResponseEntity<ApiResponse> purchaseOrder(@PathVariable Long id) {
         orderService.purchaseOrder(id);

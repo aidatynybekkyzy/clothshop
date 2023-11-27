@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -14,11 +14,7 @@ import java.util.List;
 @Table(name = "roles")
 @NoArgsConstructor
 @AllArgsConstructor
-public class  Role extends AbstractEntity<Long> {
-
+public class Role extends AbstractEntity<Long> {
+    @Column(name = "role_name")
     String roleName;
-    @JsonIgnore
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "role")
-    private List<User> userEntities = new ArrayList<>();
-
 }
