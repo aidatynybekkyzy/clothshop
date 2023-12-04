@@ -3,8 +3,8 @@ package com.aidatynybekkyzy.clothshop.model;
 
 import com.aidatynybekkyzy.clothshop.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

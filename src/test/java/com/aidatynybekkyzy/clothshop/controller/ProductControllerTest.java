@@ -2,10 +2,10 @@ package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
-import com.aidatynybekkyzy.clothshop.exception.EntityAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.EntityNotFoundException;
 import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
-import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
+import com.aidatynybekkyzy.clothshop.exception.exceptionhandler.GlobalExceptionHandler;
+import com.aidatynybekkyzy.clothshop.service.common.ResponseErrorValidation;
 import com.aidatynybekkyzy.clothshop.service.impl.ProductServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +40,8 @@ class ProductControllerTest {
     @InjectMocks
     private ProductController productController;
     @Mock
+    private ResponseErrorValidation responseErrorValidation;
+    @Mock
     private ProductServiceImpl productService;
     private static final Long VENDOR_ID = 1L;
     private static final Long PRODUCT_ID = 1L;
@@ -51,7 +53,7 @@ class ProductControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(productController)
+        mockMvc = MockMvcBuilders.standaloneSetup(productController, responseErrorValidation)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
@@ -72,7 +74,7 @@ class ProductControllerTest {
 
         when(productService.createProduct(any(ProductDto.class))).thenReturn(createdProductDto);
 
-        mockMvc.perform(post("/products/admin/createProduct")
+        mockMvc.perform(post("/products/createProduct")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(productDto)))
                 .andExpect(status().isCreated())
@@ -89,52 +91,12 @@ class ProductControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     @DisplayName("Create Product - Missing Product Name")
-     void createProduct_missingProductName() throws Exception {
+     void createProduct_missingOrEmptyProductName() throws Exception {
         ProductDto productDto = createValidProductDto();
         productDto.setName(null);
         when(productService.createProduct(any(ProductDto.class))).thenThrow(InvalidArgumentException.class);
 
-        mockMvc.perform(post("/products/admin/createProduct")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtils.asJsonString(productDto)))
-                .andExpect(status().isBadRequest());
-
-        verify(productService, times(1)).createProduct(any(ProductDto.class));
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("Create Product - Empty Product Name")
-     void createProduct_emptyProductName() throws Exception {
-        ProductDto productDto = new ProductDto();
-        productDto.setId(PRODUCT_ID);
-        productDto.setName("");
-        productDto.setPrice(PRODUCT_PRICE);
-        productDto.setQuantity(PRODUCT_QUANTITY);
-        productDto.setCategoryId(PRODUCT_CATEGORY_ID);
-        productDto.setVendorId(VENDOR_ID);
-
-
-        when(productService.createProduct(any(ProductDto.class))).thenThrow(InvalidArgumentException.class);
-
-        mockMvc.perform(post("/products/admin/createProduct")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtils.asJsonString(productDto)))
-                .andExpect(status().isBadRequest());
-        assertEquals("", productDto.getName());
-
-        verify(productService, times(1)).createProduct(any(ProductDto.class));
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("Create Product - Product with Same Name Already Exists")
-     void createProduct_productNameAlreadyExists() throws Exception {
-        ProductDto productDto = createValidProductDto();
-
-        when(productService.createProduct(any(ProductDto.class))).thenThrow(EntityAlreadyExistsException.class);
-
-        mockMvc.perform(post("/products/admin/createProduct")
+        mockMvc.perform(post("/products/createProduct")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(productDto)))
                 .andExpect(status().isBadRequest());
@@ -150,7 +112,7 @@ class ProductControllerTest {
         productDto.setVendorId(3L);
 
         when(productService.createProduct(any(ProductDto.class))).thenThrow(EntityNotFoundException.class);
-        mockMvc.perform(post("/products/admin/createProduct")
+        mockMvc.perform(post("/products/createProduct")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(productDto)))
                 .andExpect(status().isNotFound());
@@ -218,7 +180,7 @@ class ProductControllerTest {
 
         when(productService.updateProduct(eq(PRODUCT_ID), any(ProductDto.class))).thenReturn(productDto);
 
-        mockMvc.perform(patch("/products/admin/{id}", PRODUCT_ID)
+        mockMvc.perform(patch("/products/{id}", PRODUCT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(productDto)))
                 .andExpect(status().isOk())
@@ -233,7 +195,7 @@ class ProductControllerTest {
 
     @Test
     void deleteProduct_success() throws Exception {
-        mockMvc.perform(delete("/products/admin/{id}", PRODUCT_ID))
+        mockMvc.perform(delete("/products/{id}", PRODUCT_ID))
                 .andExpect(status().isOk())
                 .andDo(print());
         verify(productService, times(1)).deleteProduct(PRODUCT_ID);
@@ -243,7 +205,7 @@ class ProductControllerTest {
     void deleteProduct_productNotFound() throws Exception {
         final Long productId = 3L;
         doThrow(EntityNotFoundException.class).when(productService).deleteProduct(productId);
-        mockMvc.perform(delete("/products/admin/{id}", productId))
+        mockMvc.perform(delete("/products/{id}", productId))
                 .andExpect(status().isNotFound())
                 .andDo(print());
     }

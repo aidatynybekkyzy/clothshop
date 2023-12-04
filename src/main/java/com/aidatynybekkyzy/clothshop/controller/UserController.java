@@ -57,8 +57,9 @@ public class UserController {
 
     @RequestMapping(value = "/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH})
     @ApiOperation("Update user")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
-
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody @Valid UserDto userDto, BindingResult bindingResult) {
+        ResponseEntity<?> errorMap = responseErrorValidation.mapValidationService(bindingResult);
+        if (errorMap != null) return errorMap;
         UserDto updatedUser = userService.updateUser(id, userDto);
         return ResponseEntity.ok(updatedUser);
     }
@@ -80,15 +81,6 @@ public class UserController {
     @PostMapping("/{userId}/orders")
     @ApiOperation("Create an order for a customer ")
     public ResponseEntity<?> createOrderForUser(@PathVariable Long userId, @RequestBody @Valid OrderDto orderDto, BindingResult bindingResult) {
-        ResponseEntity<?> errorMap = responseErrorValidation.mapValidationService(bindingResult);
-        if (errorMap != null) return errorMap;
-        OrderDto createdOrderDto = userService.createOrderForCustomer(userId, orderDto);
-        return ResponseEntity.ok(createdOrderDto);
-    }
-
-    @PostMapping("/{userId}/orders")
-    @ApiOperation("Create an order for a customer ")
-    public ResponseEntity<?> createOrderForUserByAdmin(@PathVariable Long userId, @RequestBody @Valid OrderDto orderDto, BindingResult bindingResult) {
         ResponseEntity<?> errorMap = responseErrorValidation.mapValidationService(bindingResult);
         if (errorMap != null) return errorMap;
         OrderDto createdOrderDto = userService.createOrderForCustomer(userId, orderDto);

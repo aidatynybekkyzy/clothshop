@@ -3,9 +3,10 @@ package com.aidatynybekkyzy.clothshop.controller;
 import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
 import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
-import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
+import com.aidatynybekkyzy.clothshop.exception.exceptionhandler.GlobalExceptionHandler;
 import com.aidatynybekkyzy.clothshop.model.OrderItem;
 import com.aidatynybekkyzy.clothshop.enums.OrderStatus;
+import com.aidatynybekkyzy.clothshop.service.common.ResponseErrorValidation;
 import com.aidatynybekkyzy.clothshop.service.impl.OrderServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,8 @@ class OrderControllerTest {
     private OrderController orderController;
     @Mock
     private OrderServiceImpl orderService;
+    @Mock
+    ResponseErrorValidation responseErrorValidation;
     MockMvc mockMvc;
     private final static long ID = 1L;
 
@@ -79,7 +82,7 @@ class OrderControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(orderController)
+        mockMvc = MockMvcBuilders.standaloneSetup(orderController, responseErrorValidation)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
@@ -94,7 +97,7 @@ class OrderControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].items[0].quantity", is(2)))
-                .andExpect(jsonPath("$[0].items[0].productId", is(2)))
+                .andExpect(jsonPath("$[0].items[0].productId", is(1)))
                 .andExpect(jsonPath("$[0].items[0].sellingPrice", is(25)))
                 .andExpect(jsonPath("$[1].items[0].quantity", is(2)))
                 .andExpect(jsonPath("$[1].items[0].productId", is(2)))
@@ -125,13 +128,13 @@ class OrderControllerTest {
                 .productId(1L)
                 .quantity(2)
                 .sellingPrice(new BigDecimal(25)).build();
-        when(orderService.addItem(orderId, orderItem)).thenReturn(order1);
+        when(orderService.addItemToOrder(orderId, orderItem)).thenReturn(order1);
         mockMvc.perform(post("/orders/{orderId}/items", orderId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(orderItem)))
                 .andExpect(status().isOk())
                 .andExpect(content().json(JsonUtils.asJsonString(order1)));
-        verify(orderService, times(1)).addItem(orderId, orderItem1);
+        verify(orderService, times(1)).addItemToOrder(orderId, orderItem1);
     }
 
     @Test

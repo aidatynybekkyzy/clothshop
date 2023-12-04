@@ -1,8 +1,7 @@
 package com.aidatynybekkyzy.clothshop.dto;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Null;
-import jakarta.validation.constraints.Size;
+import javax.validation.constraints.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +17,7 @@ public class CategoryDto {
     @Null
     private Long id;
 
-    @NotEmpty()
+    @NotEmpty() @NotBlank
     @Size(min = 4, max = 50)
     private String categoryName;
 

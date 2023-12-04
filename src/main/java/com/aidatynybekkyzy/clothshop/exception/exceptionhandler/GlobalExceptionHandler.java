@@ -1,4 +1,4 @@
-package com.aidatynybekkyzy.clothshop.exception.exceptionHandler;
+package com.aidatynybekkyzy.clothshop.exception.exceptionhandler;
 
 import com.aidatynybekkyzy.clothshop.exception.*;
 import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;

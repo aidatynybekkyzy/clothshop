@@ -13,9 +13,10 @@ import com.aidatynybekkyzy.clothshop.service.VendorService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class VendorServiceImpl implements VendorService {
@@ -33,12 +34,13 @@ public class VendorServiceImpl implements VendorService {
         List<Vendor> vendors = vendorRepository.findAll();
         return vendors.stream()
                 .map(vendorMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     @CacheEvict(value = "vendorsCache", allEntries = true)
-    public VendorDto createVendor(VendorDto vendorDto) {
+    @Transactional
+    public VendorDto createVendor(@Valid VendorDto vendorDto) {
         if (vendorRepository.existsByVendorName(vendorDto.getVendorName())) {
             throw new EntityAlreadyExistsException("Vendor with this name already exists ");
         }
@@ -81,11 +83,11 @@ public class VendorServiceImpl implements VendorService {
     @Override
     @CacheEvict(value = "vendorsCache", key = "#id")
     public VendorDto addProductToVendor(long id, ProductDto productDto) {
-        Vendor vendor = vendorMapper.toEntity(getVendorById(id));
 
-        if (productDto.getName() == null || productDto.getName().isEmpty()) {
+        if (productDto.getName().equals("") || productDto.getName().isEmpty()) {
             throw new InvalidArgumentException("Product name is required! ");
         }
+        Vendor vendor = vendorMapper.toEntity(getVendorById(id));
         if (vendor.getProducts().stream().anyMatch(p -> p.getName().equalsIgnoreCase(productDto.getName()))) {
             throw new EntityAlreadyExistsException("Product with the same name already exists for this vendor");
         }

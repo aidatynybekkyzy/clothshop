@@ -6,7 +6,8 @@ import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.exception.EntityAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.EntityNotFoundException;
 import com.aidatynybekkyzy.clothshop.exception.InvalidArgumentException;
-import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
+import com.aidatynybekkyzy.clothshop.exception.exceptionhandler.GlobalExceptionHandler;
+import com.aidatynybekkyzy.clothshop.service.common.ResponseErrorValidation;
 import com.aidatynybekkyzy.clothshop.service.impl.CategoryServiceImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +43,8 @@ class CategoryControllerTest {
     private MockMvc mockMvc;
     @InjectMocks
     private CategoryController categoryController;
+    @Mock
+    ResponseErrorValidation responseErrorValidation;
     private final static long ID = 1L;
     private final static String CATEGORY_NAME = "Test category name ";
 
@@ -64,7 +67,7 @@ class CategoryControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(categoryController)
+        mockMvc = MockMvcBuilders.standaloneSetup(categoryController, responseErrorValidation)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
@@ -81,7 +84,7 @@ class CategoryControllerTest {
                 .build();
         when(categoryService.createCategory(any(CategoryDto.class))).thenReturn(createdMockCategory);
 
-        mockMvc.perform(post("/categories/admin/create")
+        mockMvc.perform(post("/categories/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtils.asJsonString(createdMockCategory)))
                 .andExpect(status().isCreated())
@@ -98,7 +101,7 @@ class CategoryControllerTest {
 
         when(categoryService.createCategory(any(CategoryDto.class))).thenThrow(InvalidArgumentException.class);
 
-        mockMvc.perform(post("/categories/admin/create")
+        mockMvc.perform(post("/categories/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(invalidCategory)))
                 .andExpect(status().isBadRequest());
@@ -114,7 +117,7 @@ class CategoryControllerTest {
 
         when(categoryService.createCategory(any(CategoryDto.class))).thenThrow(EntityAlreadyExistsException.class);
 
-        mockMvc.perform(post("/categories/admin/create")
+        mockMvc.perform(post("/categories/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(existingCategory)))
                 .andExpect(status().isConflict());
@@ -146,7 +149,6 @@ class CategoryControllerTest {
         verify(categoryService, times(1)).getCategoryById(categoryId);
     }
 
-
     @Test
     @DisplayName("Get All Categories")
      void testGetAllCategories_success() throws Exception {
@@ -170,7 +172,7 @@ class CategoryControllerTest {
                 .build();
         when(categoryService.updateCategory(eq(ID), any(CategoryDto.class))).thenReturn(updatedCategoryDto);
 
-        mockMvc.perform(patch("/categories/admin/{id}", ID)
+        mockMvc.perform(patch("/categories/{id}", ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(mockCategory)))
                 .andExpect(status().isOk())
@@ -189,7 +191,7 @@ class CategoryControllerTest {
         when(categoryService.updateCategory(eq(categoryId), any(CategoryDto.class)))
                 .thenThrow(InvalidArgumentException.class);
 
-        mockMvc.perform(patch("/categories/admin/{id}", categoryId)
+        mockMvc.perform(patch("/categories/{id}", categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(updatedCategoryDto)))
                 .andExpect(status().isBadRequest());
@@ -197,12 +199,11 @@ class CategoryControllerTest {
         verify(categoryService, times(1)).updateCategory(eq(categoryId), any(CategoryDto.class));
     }
 
-
     @Test
     @DisplayName("Delete Category by Id ")
     void deleteCategory_success() throws Exception {
         Long id = 1L;
-        mockMvc.perform(delete("/categories/admin/{id}", id))
+        mockMvc.perform(delete("/categories/{id}", id))
                 .andExpect(status().isNoContent())
                 .andDo(print());
         verify(categoryService, times(1)).deleteCategory(id);
@@ -210,11 +211,11 @@ class CategoryControllerTest {
     @Test
     @DisplayName("Delete Category - Error: Category Not Found")
     void deleteCategory_categoryNotFound() throws Exception {
-        final Long categoryId = 1L;
+        final Long categoryId = 10L;
         doThrow(EntityNotFoundException.class)
                 .when(categoryService).deleteCategory(categoryId);
 
-        mockMvc.perform(delete("/categories/admin/{id}", categoryId))
+        mockMvc.perform(delete("/categories/{id}", categoryId))
                 .andExpect(status().isNotFound());
 
         verify(categoryService, times(1)).deleteCategory(categoryId);

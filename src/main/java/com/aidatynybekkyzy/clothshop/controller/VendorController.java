@@ -4,26 +4,28 @@ import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.VendorDto;
 import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;
 import com.aidatynybekkyzy.clothshop.service.VendorService;
+import com.aidatynybekkyzy.clothshop.service.common.ResponseErrorValidation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/vendors")
 @Api("Vendor controller")
 @PreAuthorize("hasAnyRole('ADMIN')")
 public class VendorController {
     private final VendorService vendorService;
+    private final ResponseErrorValidation responseErrorValidation;
 
-    public VendorController(VendorService vendorService) {
-        this.vendorService = vendorService;
-    }
 
     @GetMapping
     @ApiOperation("Get the list of all vendors")
@@ -34,14 +36,18 @@ public class VendorController {
 
     @PostMapping("/createVendor")
     @ApiOperation("Creating new vendor")
-    public ResponseEntity<VendorDto> createVendor(@RequestBody @Valid VendorDto vendorDto) {
+    public ResponseEntity<?> createVendor(@RequestBody @Valid VendorDto vendorDto, BindingResult bindingResult) {
+        ResponseEntity<?> errorMap = responseErrorValidation.mapValidationService(bindingResult);
+        if (errorMap != null) return errorMap;
         VendorDto createdVendor = vendorService.createVendor(vendorDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdVendor);
     }
 
     @PatchMapping("/{id}")
     @ApiOperation("Updating the vendor")
-    public ResponseEntity<VendorDto> updateVendor(@PathVariable Long id, @RequestBody @Valid VendorDto vendorDto) {
+    public ResponseEntity<?> updateVendor(@PathVariable Long id, @RequestBody @Valid VendorDto vendorDto, BindingResult bindingResult) {
+        ResponseEntity<?> errorMap = responseErrorValidation.mapValidationService(bindingResult);
+        if (errorMap != null) return errorMap;
         VendorDto updatedVendor = vendorService.updateVendor(id, vendorDto);
         return ResponseEntity.ok(updatedVendor);
 
@@ -65,7 +71,9 @@ public class VendorController {
 
     @PostMapping("/{id}/products")
     @ApiOperation("Adding product to a vendor")
-    public ResponseEntity<VendorDto> addProductToVendor(@PathVariable long id, @RequestBody @Valid ProductDto productDto)  {
+    public ResponseEntity<?> addProductToVendor(@PathVariable long id, @RequestBody @Valid ProductDto productDto, BindingResult bindingResult) {
+        ResponseEntity<?> errorMap = responseErrorValidation.mapValidationService(bindingResult);
+        if (errorMap != null) return errorMap;
         VendorDto updatedVendor = vendorService.addProductToVendor(id, productDto);
         return ResponseEntity.ok(updatedVendor);
     }

@@ -4,12 +4,15 @@ import com.aidatynybekkyzy.clothshop.dto.CategoryDto;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;
 import com.aidatynybekkyzy.clothshop.service.CategoryService;
+import com.aidatynybekkyzy.clothshop.service.common.ResponseErrorValidation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -17,20 +20,19 @@ import java.util.List;
 
 @RestController
 @Slf4j
+@RequiredArgsConstructor
 @RequestMapping("/categories")
 @Api("Category controller")
 @PreAuthorize("hasRole('ADMIN')")
 public class CategoryController {
     private final CategoryService categoryService;
-
-    public CategoryController(CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
+    private final ResponseErrorValidation responseErrorValidation;
 
     @PostMapping("/create")
     @ApiOperation("Creating new category")
-    public ResponseEntity<CategoryDto> createCategory(@RequestBody @Valid CategoryDto categoryDTO) {
-        log.info("CONTROLLER Creating new category");
+    public ResponseEntity<?> createCategory(@RequestBody @Valid CategoryDto categoryDTO, BindingResult bindingResult) {
+        ResponseEntity<?> errorMap = responseErrorValidation.mapValidationService(bindingResult);
+        if (errorMap != null) return errorMap;
         CategoryDto createdCategory = categoryService.createCategory(categoryDTO);
         return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
     }
@@ -53,8 +55,9 @@ public class CategoryController {
 
     @PatchMapping("/{id}")
     @ApiOperation("Updating category")
-    public ResponseEntity<CategoryDto> updateCategory(@PathVariable Long id, @RequestBody @Valid CategoryDto categoryDto) {
-        log.info("Update category. change: " + categoryDto.toString());
+    public ResponseEntity<?> updateCategory(@PathVariable Long id, @RequestBody @Valid CategoryDto categoryDto, BindingResult bindingResult) {
+        ResponseEntity<?> errorMap = responseErrorValidation.mapValidationService(bindingResult);
+        if (errorMap != null) return errorMap;
         CategoryDto updatedCategory = categoryService.updateCategory(id, categoryDto);
         return new ResponseEntity<>(updatedCategory, HttpStatus.OK);
     }

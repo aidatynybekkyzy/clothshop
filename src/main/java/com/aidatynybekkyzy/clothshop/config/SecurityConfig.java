@@ -20,10 +20,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableSwagger2
 public class SecurityConfig {
     private final JWTAuthFilter jwtAuthFilter;
     private final LogoutHandler logoutHandler;
@@ -55,13 +57,7 @@ public class SecurityConfig {
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
                                 .antMatchers(AUTH_END_POINT).permitAll()
-                                //.antMatchers(HttpMethod.GET, "/vendors/").permitAll()
-                                //  .antMatchers(HttpMethod.GET, "/categories/").permitAll()
-                                //  .antMatchers(HttpMethod.GET, "/products/").permitAll()
-                                //  .antMatchers(HttpMethod.GET, "/users/").permitAll()
-                                //  .antMatchers(HttpMethod.GET, "/orders/**").permitAll()
-                                //   .antMatchers(HttpMethod.POST, "/products/admin/createProduct").hasRole(ADMIN)
-                                //     .antMatchers(VENDOR_ADMIN, USER_ADMIN, CATEGORY_ADMIN, ORDER_ADMIN).hasRole(ADMIN)
+                                .antMatchers("/swagger-ui").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .logout()

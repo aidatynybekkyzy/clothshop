@@ -4,7 +4,8 @@ import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.OrderDto;
 import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
 import com.aidatynybekkyzy.clothshop.dto.UserDto;
-import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
+import com.aidatynybekkyzy.clothshop.exception.exceptionhandler.GlobalExceptionHandler;
+import com.aidatynybekkyzy.clothshop.service.common.ResponseErrorValidation;
 import com.aidatynybekkyzy.clothshop.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserControllerTest {
     @InjectMocks
     UserController userController;
+    @Mock
+    ResponseErrorValidation responseErrorValidation;
 
     @Mock
     UserServiceImpl userService;
@@ -90,7 +93,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(userController)
+        mockMvc = MockMvcBuilders.standaloneSetup(userController, responseErrorValidation)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
@@ -100,7 +103,7 @@ class UserControllerTest {
     void createUser() throws Exception {
         when(userService.createUser(any(UserDto.class))).thenReturn(user);
 
-        mockMvc.perform(post("/users/admin")
+        mockMvc.perform(post("/users/createUser")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(user)))
                 .andExpect(status().isCreated())
@@ -135,7 +138,7 @@ class UserControllerTest {
     void getAllUsers() throws Exception {
         when(userService.getAllUsers()).thenReturn(users);
 
-        mockMvc.perform(get("/users/admin/getUsers"))
+        mockMvc.perform(get("/users/getUsers"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id", is(1)))
@@ -187,7 +190,7 @@ class UserControllerTest {
     @Test
     void deleteUser() throws Exception {
         Long id = 1L;
-        mockMvc.perform(delete("/users/admin/{id}", id))
+        mockMvc.perform(delete("/users/{id}", id))
                 .andExpect(status().isNoContent())
                 .andDo(print());
         verify(userService, times(1)).deleteUser(id);

@@ -5,10 +5,13 @@ import com.aidatynybekkyzy.clothshop.dto.OrderItemDto;
 import com.aidatynybekkyzy.clothshop.model.OrderItem;
 import com.aidatynybekkyzy.clothshop.model.response.ApiResponse;
 import com.aidatynybekkyzy.clothshop.service.OrderService;
+import com.aidatynybekkyzy.clothshop.service.common.ResponseErrorValidation;
 import io.swagger.annotations.ApiOperation;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -16,14 +19,12 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/orders")
 @PreAuthorize("hasRole('ADMIN') or isAuthenticated()")
 public class OrderController {
     private final OrderService orderService;
-
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
-    }
+    private final ResponseErrorValidation responseErrorValidation;
 
     @GetMapping
     @ApiOperation("Getting list of orders")
@@ -42,8 +43,10 @@ public class OrderController {
 
     @PostMapping("/{orderId}/items")
     @ApiOperation("Adding item to an order")
-    public ResponseEntity<OrderDto> addItemToOrder(@PathVariable Long orderId, @RequestBody @Valid OrderItemDto orderItemDto) {
-        OrderDto orderDto = orderService.addItem(orderId, orderItemDto);
+    public ResponseEntity<?> addItemToOrder(@PathVariable Long orderId, @RequestBody @Valid OrderItemDto orderItemDto, BindingResult bindingResult) {
+        ResponseEntity<?> errorMap = responseErrorValidation.mapValidationService(bindingResult);
+        if (errorMap != null) return errorMap;
+        OrderDto orderDto = orderService.addItemToOrder(orderId, orderItemDto);
         return new ResponseEntity<>(orderDto, HttpStatus.OK);
     }
 

@@ -4,7 +4,8 @@ package com.aidatynybekkyzy.clothshop.controller;
 import com.aidatynybekkyzy.clothshop.JsonUtils;
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.dto.VendorDto;
-import com.aidatynybekkyzy.clothshop.exception.exceptionHandler.GlobalExceptionHandler;
+import com.aidatynybekkyzy.clothshop.exception.exceptionhandler.GlobalExceptionHandler;
+import com.aidatynybekkyzy.clothshop.service.common.ResponseErrorValidation;
 import com.aidatynybekkyzy.clothshop.service.impl.VendorServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class VendorControllerTest {
     @Mock
     private VendorServiceImpl vendorService;
+    @Mock
+    ResponseErrorValidation responseErrorValidation;
 
     private MockMvc mockMvc;
     @InjectMocks
@@ -51,7 +54,7 @@ class VendorControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(vendorController)
+        mockMvc = MockMvcBuilders.standaloneSetup(vendorController, responseErrorValidation)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
@@ -83,7 +86,7 @@ class VendorControllerTest {
 
         when(vendorService.createVendor(any(VendorDto.class))).thenReturn(vendorDto);
 
-        mockMvc.perform(post("/vendors/admin/createVendor")
+        mockMvc.perform(post("/vendors/createVendor")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(vendorDto)))
                 .andExpect(status().isCreated())
@@ -101,7 +104,7 @@ class VendorControllerTest {
                 .build();
         when(vendorService.updateVendor(eq(ID), any(VendorDto.class))).thenReturn(updatedVendor);
 
-        mockMvc.perform(patch("/vendors/admin/{id}", ID)
+        mockMvc.perform(patch("/vendors/{id}", ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(vendorDto)))
                 .andExpect(status().isOk())
@@ -125,7 +128,7 @@ class VendorControllerTest {
     @Test
     void deleteVendorById() throws Exception {
         Long id = 1L;
-        mockMvc.perform(delete("/vendors/admin/{id}", id))
+        mockMvc.perform(delete("/vendors/{id}", id))
                 .andExpect(status().isOk())
                 .andDo(print());
         verify(vendorService, times(1)).deleteVendorById(id);
@@ -148,7 +151,7 @@ class VendorControllerTest {
 
         when(vendorService.addProductToVendor(eq(vendorId),any(ProductDto.class))).thenReturn(updatedVendor);
 
-        mockMvc.perform(post("/vendors/admin/{id}/products", vendorId)
+        mockMvc.perform(post("/vendors/{id}/products", vendorId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtils.asJsonString(productDto)))
                 .andExpect(status().isOk())

@@ -56,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDto addItem(Long orderId, OrderItemDto orderItemDto) {
+    public OrderDto addItemToOrder(Long orderId, OrderItemDto orderItemDto) {
 
         log.info("Item to add to order: " + orderItemDto.toString());
 
@@ -111,7 +111,6 @@ public class OrderServiceImpl implements OrderService {
     public Set<OrderItem> getAllOrderItems(Long orderId) {
         log.info("Getting all order by id: " + orderId + " items");
         Order order = getOrderByIdIfExists(orderId);
-        //log.info("OrderItems: " + order.getOrderItems().stream().findFirst());
         return order.getOrderItems();
     }
 
@@ -125,7 +124,6 @@ public class OrderServiceImpl implements OrderService {
                 .filter(item -> item.getId().equals(itemId))
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Order item with id: '%s' not found in order with id: '%s'", itemId, orderId)));
-        // log.info("OrderItems: " + order.getOrderItems());
         order.remove(orderItem.getId());
         orderItemRepository.delete(orderItem);
         orderRepository.save(order);

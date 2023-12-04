@@ -21,6 +21,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
 import java.util.Set;
@@ -43,7 +44,7 @@ public class AuthenticationService {
 
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
-
+    @Transactional
     public UserDto register(UserDto request) throws PasswordIncorrectException {
         log.info("Registering new user with email " + request.getEmail());
         if (!request.getConfirmPassword().equals(request.getPassword())) {
@@ -63,7 +64,7 @@ public class AuthenticationService {
         log.info("Saved user with email " + request.getEmail());
         return  userMapper.toDto(user);
     }
-
+    @Transactional
     public AuthenticationResponseDto authenticate(@NotNull AuthenticationRequestDto request) {
         try {
             authenticationManager.authenticate(

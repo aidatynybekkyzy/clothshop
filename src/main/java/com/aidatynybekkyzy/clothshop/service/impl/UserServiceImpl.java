@@ -6,7 +6,6 @@ import com.aidatynybekkyzy.clothshop.dto.UserDto;
 import com.aidatynybekkyzy.clothshop.enums.OrderStatus;
 import com.aidatynybekkyzy.clothshop.exception.EntityAlreadyExistsException;
 import com.aidatynybekkyzy.clothshop.exception.EntityNotFoundException;
-import com.aidatynybekkyzy.clothshop.mapper.OrderItemMapper;
 import com.aidatynybekkyzy.clothshop.mapper.OrderMapper;
 import com.aidatynybekkyzy.clothshop.mapper.UserMapper;
 import com.aidatynybekkyzy.clothshop.model.Order;
@@ -17,10 +16,6 @@ import com.aidatynybekkyzy.clothshop.repository.UserRepository;
 import com.aidatynybekkyzy.clothshop.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -39,14 +33,16 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
-    private final OrderItemMapper orderItemMapper;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, OrderRepository orderRepository, OrderMapper orderMapper, OrderItemMapper orderItemMapper) {
+
+    public UserServiceImpl(UserRepository userRepository,
+                           UserMapper userMapper,
+                           OrderRepository orderRepository,
+                           OrderMapper orderMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
-        this.orderItemMapper = orderItemMapper;
     }
 
     @Override
@@ -103,7 +99,7 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.toEntity(getUserById(userId));
         List<Order> orders = orderRepository.findByUser(user);
         return orders.stream().map(orderMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

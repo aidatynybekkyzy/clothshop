@@ -4,6 +4,8 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.*;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
@@ -20,6 +22,8 @@ public class Product extends AbstractEntity<Long> {
     @Column(length = 100, nullable = false)
     private String name;
     @Column(nullable = false)
+    @Positive(message = "Price must be greater than 0")
+    @DecimalMin(value = "0.0", inclusive = false)
     private BigDecimal price;
     private Integer quantity;
     @Column(name = "category_id")

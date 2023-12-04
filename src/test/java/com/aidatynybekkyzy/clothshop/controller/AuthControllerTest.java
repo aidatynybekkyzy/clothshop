@@ -8,11 +8,13 @@ import com.aidatynybekkyzy.clothshop.model.User;
 import com.aidatynybekkyzy.clothshop.model.response.AuthenticationResponseDto;
 import com.aidatynybekkyzy.clothshop.security.jwt.JwtTokenProvider;
 import com.aidatynybekkyzy.clothshop.service.UserService;
+import com.aidatynybekkyzy.clothshop.service.common.ResponseErrorValidation;
 import com.aidatynybekkyzy.clothshop.service.impl.AuthenticationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,6 +48,8 @@ class AuthControllerTest {
     private UserService userService;
     @MockBean
     private AuthenticationService authenticationService;
+    @Mock
+    ResponseErrorValidation responseErrorValidation;
 
     @Autowired
     WebApplicationContext context;

@@ -2,13 +2,16 @@ package com.aidatynybekkyzy.clothshop.controller;
 
 import com.aidatynybekkyzy.clothshop.dto.ProductDto;
 import com.aidatynybekkyzy.clothshop.service.ProductService;
+import com.aidatynybekkyzy.clothshop.service.common.ResponseErrorValidation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,21 +21,22 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/products")
+@RequiredArgsConstructor
 @Slf4j
 @Api("Product controller")
 public class ProductController {
     private final ProductService productService;
+    private final ResponseErrorValidation responseErrorValidation;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
 
     @PostMapping("/createProduct")
     @ApiOperation("Creating new product")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductDto> createProduct(@RequestBody @Valid ProductDto productDto)   {
-            ProductDto createdProduct = productService.createProduct(productDto);
-             return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+    public ResponseEntity<?> createProduct(@RequestBody @Valid ProductDto productDto, BindingResult bindingResult) {
+        ResponseEntity<?> errorMap = responseErrorValidation.mapValidationService(bindingResult);
+        if (errorMap != null) return errorMap;
+        ProductDto createdProduct = productService.createProduct(productDto);
+        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -52,7 +56,9 @@ public class ProductController {
 
     @PatchMapping("/{id}")
     @ApiOperation("Updating the product")
-    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody @Valid ProductDto productDto) {
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody @Valid ProductDto productDto, BindingResult bindingResult) {
+        ResponseEntity<?> errorMap = responseErrorValidation.mapValidationService(bindingResult);
+        if (errorMap != null) return errorMap;
         ProductDto updatedProduct = productService.updateProduct(id, productDto);
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }

@@ -1,6 +1,5 @@
 package com.aidatynybekkyzy.clothshop.dto;
 
-import com.aidatynybekkyzy.clothshop.model.OrderItem;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 

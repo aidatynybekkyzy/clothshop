@@ -20,13 +20,16 @@ public class ProductDto {
     @NotEmpty @NotNull
     @Size(min = 4, max = 100)
     private String name;
-    @NotNull
+    @NotNull @Positive
     @DecimalMin(value = "0.0", inclusive = false)
+    @Positive(message = "Price must be greater than 0")
     @Digits(integer=4, fraction=2)
     private BigDecimal price;
+    @NotNull @NotEmpty
     private Integer quantity;
-    @NotNull
+    @NotNull @NotEmpty
     private Long categoryId;
+    @NotNull @NotEmpty
     private Long vendorId;
 
     public ProductDto(long id, String name, BigDecimal price, int quantity) {
