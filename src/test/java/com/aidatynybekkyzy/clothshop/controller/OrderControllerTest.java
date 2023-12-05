@@ -115,7 +115,7 @@ class OrderControllerTest {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[0].quantity", is(2)))
-                .andExpect(jsonPath("$.items[0].productId", is(1)))
+                .andExpect(jsonPath("$.items[0].productId", is(2)))
                 .andExpect(jsonPath("$.items[0].sellingPrice", is(25)))
                 .andDo(print());
     }
@@ -123,18 +123,24 @@ class OrderControllerTest {
     @Test
     void addItemToOrder() throws Exception {
         Long orderId = 1L;
+        OrderDto order = OrderDto.builder()
+                .id(1L)
+                .items(Set.of(orderItem1, orderItem2))
+                .userId(1L)
+                .build();
         OrderItemDto orderItem = OrderItemDto.builder()
                 .id(1L)
                 .productId(1L)
                 .quantity(2)
                 .sellingPrice(new BigDecimal(25)).build();
-        when(orderService.addItemToOrder(orderId, orderItem)).thenReturn(order1);
+        when(orderService.addItemToOrder(orderId, orderItem)).thenReturn(order);
+
         mockMvc.perform(post("/orders/{orderId}/items", orderId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JsonUtils.asJsonString(orderItem)))
                 .andExpect(status().isOk())
-                .andExpect(content().json(JsonUtils.asJsonString(order1)));
-        verify(orderService, times(1)).addItemToOrder(orderId, orderItem1);
+                .andExpect(content().json(JsonUtils.asJsonString(order)));
+        verify(orderService, times(1)).addItemToOrder(orderId, orderItem);
     }
 
     @Test
@@ -193,10 +199,10 @@ class OrderControllerTest {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(orderItems.size()))
-                .andExpect(jsonPath("$[0].productId").value(1))
                 .andExpect(jsonPath("$[0].quantity").value(2))
+                .andExpect(jsonPath("$[0].productId").value(2))
                 .andExpect(jsonPath("$[0].sellingPrice").value(25))
-                .andExpect(jsonPath("$[1].productId").value(2))
+                .andExpect(jsonPath("$[1].productId").value(1))
                 .andExpect(jsonPath("$[1].quantity").value(2))
                 .andExpect(jsonPath("$[1].sellingPrice").value(25))
                 .andDo(print());

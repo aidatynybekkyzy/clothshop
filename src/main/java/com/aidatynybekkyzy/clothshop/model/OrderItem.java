@@ -12,7 +12,11 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "orderItems")
-public class OrderItem extends AbstractEntity<Long> {
+public class OrderItem  {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
     private Long productId;
 
