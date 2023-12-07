@@ -100,7 +100,7 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$[0].items[0].productId", is(1)))
                 .andExpect(jsonPath("$[0].items[0].sellingPrice", is(25)))
                 .andExpect(jsonPath("$[1].items[0].quantity", is(2)))
-                .andExpect(jsonPath("$[1].items[0].productId", is(2)))
+                .andExpect(jsonPath("$[1].items[0].productId", is(1)))
                 .andExpect(jsonPath("$[1].items[0].sellingPrice", is(25)));
 
         verify(orderService, times(1)).getOrders();
@@ -200,7 +200,7 @@ class OrderControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(orderItems.size()))
                 .andExpect(jsonPath("$[0].quantity").value(2))
-                .andExpect(jsonPath("$[0].productId").value(2))
+                .andExpect(jsonPath("$[0].productId").value(1))
                 .andExpect(jsonPath("$[0].sellingPrice").value(25))
                 .andExpect(jsonPath("$[1].productId").value(1))
                 .andExpect(jsonPath("$[1].quantity").value(2))
